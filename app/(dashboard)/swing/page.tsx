@@ -7,27 +7,44 @@ import { createClient } from "@/lib/supabase/client"
 import { MetricsBar } from "@/components/trades/MetricsBar"
 import { TradesTable } from "@/components/trades/TradesTable"
 import { TradeForm } from "@/components/trades/TradeForm"
+import { EquityCurve } from "@/components/trades/EquityCurve"
 import { Button } from "@/components/ui/button"
 
 export default function SwingPage() {
-  const [trades, setTrades] = useState<Trade[]>([])
-  const [loading, setLoading] = useState(true)
-  const [formOpen, setFormOpen] = useState(false)
-  const [editTrade, setEditTrade] = useState<Trade | null>(null)
+  const [trades, setTrades]                 = useState<Trade[]>([])
+  const [loading, setLoading]               = useState(true)
+  const [formOpen, setFormOpen]             = useState(false)
+  const [editTrade, setEditTrade]           = useState<Trade | null>(null)
+  const [initialBalance, setInitialBalance] = useState(0)
 
-  async function fetchTrades() {
+  async function fetchAll() {
     const supabase = createClient()
-    const { data, error } = await supabase
-      .from("trades")
-      .select("*")
-      .order("entry_date", { ascending: false })
-    if (!error && data) setTrades(data)
+
+    const [tradesRes, settingsRes] = await Promise.all([
+      supabase.from("trades").select("*").order("entry_date", { ascending: false }),
+      supabase.from("user_settings").select("initial_balance").maybeSingle(),
+    ])
+
+    if (!tradesRes.error && tradesRes.data) setTrades(tradesRes.data)
+    if (!settingsRes.error && settingsRes.data) {
+      setInitialBalance(Number(settingsRes.data.initial_balance))
+    }
     setLoading(false)
   }
 
-  useEffect(() => {
-    fetchTrades()
-  }, [])
+  useEffect(() => { fetchAll() }, [])
+
+  async function handleUpdateBalance(value: number) {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    await supabase.from("user_settings").upsert(
+      { user_id: user.id, initial_balance: value },
+      { onConflict: "user_id" }
+    )
+    setInitialBalance(value)
+  }
 
   function handleEdit(trade: Trade) {
     setEditTrade(trade)
@@ -37,7 +54,7 @@ export default function SwingPage() {
   function handleFormClose() {
     setFormOpen(false)
     setEditTrade(null)
-    fetchTrades()
+    fetchAll()
   }
 
   return (
@@ -53,13 +70,20 @@ export default function SwingPage() {
         </Button>
       </div>
 
-      <MetricsBar trades={trades} loading={loading} />
+      <MetricsBar
+        trades={trades}
+        loading={loading}
+        initialBalance={initialBalance}
+        onUpdateBalance={handleUpdateBalance}
+      />
+
+      <EquityCurve trades={trades} initialBalance={initialBalance} />
 
       <TradesTable
         trades={trades}
         loading={loading}
         onEdit={handleEdit}
-        onRefresh={fetchTrades}
+        onRefresh={fetchAll}
       />
 
       <TradeForm open={formOpen} trade={editTrade} onClose={handleFormClose} />

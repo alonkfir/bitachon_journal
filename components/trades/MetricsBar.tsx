@@ -8,42 +8,34 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 
-const ACCOUNT_SIZE_KEY = "trading_account_size"
-
 interface MetricsBarProps {
   trades: Trade[]
   loading: boolean
+  initialBalance: number
+  onUpdateBalance: (value: number) => Promise<void>
 }
 
-export function MetricsBar({ trades, loading }: MetricsBarProps) {
-  const [accountSize, setAccountSize] = useState<number | null>(null)
+export function MetricsBar({ trades, loading, initialBalance, onUpdateBalance }: MetricsBarProps) {
   const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState("")
+  const [draft, setDraft]     = useState("")
+  const [saving, setSaving]   = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
-
-  // Hydrate from localStorage after mount
-  useEffect(() => {
-    const saved = localStorage.getItem(ACCOUNT_SIZE_KEY)
-    if (saved) setAccountSize(parseFloat(saved))
-  }, [])
 
   useEffect(() => {
     if (editing) inputRef.current?.focus()
   }, [editing])
 
   function startEdit() {
-    setDraft(accountSize !== null ? String(accountSize) : "")
+    setDraft(initialBalance > 0 ? String(initialBalance) : "")
     setEditing(true)
   }
 
-  function saveEdit() {
+  async function saveEdit() {
     const n = parseFloat(draft)
-    if (!isNaN(n) && n > 0) {
-      setAccountSize(n)
-      localStorage.setItem(ACCOUNT_SIZE_KEY, String(n))
-    } else if (draft === "") {
-      setAccountSize(null)
-      localStorage.removeItem(ACCOUNT_SIZE_KEY)
+    if (!isNaN(n) && n >= 0) {
+      setSaving(true)
+      await onUpdateBalance(n)
+      setSaving(false)
     }
     setEditing(false)
   }
@@ -51,84 +43,76 @@ export function MetricsBar({ trades, loading }: MetricsBarProps) {
   if (loading) return <MetricsSkeleton />
 
   const m = computeMetrics(trades)
-  const exposurePct =
-    accountSize && accountSize > 0
-      ? (m.totalExposure / accountSize) * 100
-      : null
 
-  const cards = [
-    {
-      label: "שיעור הצלחה",
-      value: m.winRate !== null ? formatPercent(m.winRate) : "—",
-      sub: m.closedTradeCount > 0 ? `${m.closedTradeCount} עסקאות סגורות` : "אין עסקאות סגורות",
-      warning: m.closedTradeCount > 0 && m.closedTradeCount < 20,
-      warningText: "נדרשות 20+ עסקאות לנתון מהימן",
-      color:
-        m.winRate !== null && m.winRate >= 50
-          ? "text-emerald-600"
-          : m.winRate !== null
-          ? "text-rose-600"
-          : "text-slate-900",
-    },
-    {
-      label: "פקטור רווח",
-      value:
-        m.profitFactor === null
-          ? "—"
-          : m.profitFactor === Infinity
-          ? "∞"
-          : m.profitFactor.toFixed(2),
-      sub: "> 1.0 = מערכת רווחית",
-      color:
-        m.profitFactor !== null && m.profitFactor > 1
-          ? "text-emerald-600"
-          : m.profitFactor !== null
-          ? "text-rose-600"
-          : "text-slate-900",
-    },
-    {
-      label: "סיכון כולל (R)",
-      value: formatUSD(m.totalRisk),
-      sub: "בפוזיציות פעילות",
-      color: m.totalRisk > 0 ? "text-amber-600" : "text-slate-900",
-    },
-    {
-      label: "חשיפת תיק",
-      value: formatUSD(m.totalExposure),
-      sub: exposurePct !== null ? `${exposurePct.toFixed(1)}% מהחשבון` : "שווי פוזיציות פעילות",
-      color: "text-slate-900",
-    },
-  ]
+  // Total realized P&L across all closed events
+  const totalPnL = trades.reduce<number>((sum, t) => {
+    if (t.partial_exits?.length > 0) {
+      return sum + t.partial_exits.reduce(
+        (s, e) => s + (e.price - t.entry_price) * e.quantity - e.fees, 0
+      )
+    }
+    if (t.status === "closed" && t.exit_price !== null) {
+      return sum + (t.exit_price - t.entry_price) * t.quantity - t.fees
+    }
+    return sum
+  }, 0)
+
+  const currentBalance = initialBalance > 0 ? initialBalance + totalPnL : null
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-      {cards.map((card) => (
-        <Card key={card.label} className="border-0 shadow-sm bg-white">
-          <CardContent className="p-5">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
-              {card.label}
-            </p>
-            <p className={cn("text-2xl font-bold tabular-nums", card.color)}>{card.value}</p>
-            <p className="text-xs text-slate-400 mt-1">{card.sub}</p>
-            {card.warning && (
-              <p className="text-xs text-amber-500 mt-1">{card.warningText}</p>
-            )}
-          </CardContent>
-        </Card>
-      ))}
+    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
 
-      {/* Editable Account Size card */}
+      {/* Win Rate */}
       <Card className="border-0 shadow-sm bg-white">
         <CardContent className="p-5">
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">שיעור הצלחה</p>
+          <p className={cn(
+            "text-2xl font-bold tabular-nums",
+            m.winRate !== null && m.winRate >= 50 ? "text-emerald-600"
+              : m.winRate !== null ? "text-rose-600"
+              : "text-slate-900"
+          )}>
+            {m.winRate !== null ? formatPercent(m.winRate) : "—"}
+          </p>
+          <p className="text-xs text-slate-400 mt-1">
+            {m.closedTradeCount > 0 ? `${m.closedTradeCount} עסקאות סגורות` : "אין עסקאות סגורות"}
+          </p>
+          {m.closedTradeCount > 0 && m.closedTradeCount < 20 && (
+            <p className="text-xs text-amber-500 mt-1">נדרשות 20+ עסקאות לנתון מהימן</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Total Realized P&L */}
+      <Card className="border-0 shadow-sm bg-white">
+        <CardContent className="p-5">
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">רווח/הפסד ממומש</p>
+          <p className={cn(
+            "text-2xl font-bold tabular-nums",
+            totalPnL > 0 ? "text-emerald-600"
+              : totalPnL < 0 ? "text-rose-600"
+              : "text-slate-900"
+          )}>
+            {totalPnL >= 0 ? "+" : ""}{formatUSD(totalPnL)}
+          </p>
+          <p className="text-xs text-slate-400 mt-1">
+            {currentBalance !== null
+              ? `יתרה נוכחית: ${formatUSD(currentBalance)}`
+              : "הגדר יתרה התחלתית"}
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Initial Balance — editable, saved to Supabase */}
+      <Card className="border-0 shadow-sm bg-white col-span-2 lg:col-span-1">
+        <CardContent className="p-5">
           <div className="flex items-center justify-between mb-1">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
-              גודל חשבון
-            </p>
+            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">יתרה התחלתית</p>
             {!editing && (
               <button
                 onClick={startEdit}
                 className="text-slate-400 hover:text-primary transition-colors"
-                aria-label="ערוך גודל חשבון"
+                aria-label="ערוך יתרה"
               >
                 <Pencil className="h-3.5 w-3.5" />
               </button>
@@ -153,7 +137,7 @@ export function MetricsBar({ trades, loading }: MetricsBarProps) {
                 placeholder="100000"
                 dir="ltr"
               />
-              <button onClick={saveEdit} className="text-primary shrink-0 mr-1">
+              <button onClick={saveEdit} disabled={saving} className="text-primary shrink-0 mr-1">
                 <Check className="h-4 w-4" />
               </button>
             </div>
@@ -162,23 +146,24 @@ export function MetricsBar({ trades, loading }: MetricsBarProps) {
               className="text-2xl font-bold tabular-nums text-slate-900 cursor-pointer"
               onClick={startEdit}
             >
-              {accountSize !== null ? formatUSD(accountSize) : "—"}
+              {initialBalance > 0 ? formatUSD(initialBalance) : "—"}
             </p>
           )}
 
           <p className="text-xs text-slate-400 mt-1">
-            {accountSize !== null ? "לחץ לעדכון" : "לחץ להגדרת גודל חשבון"}
+            {initialBalance > 0 ? "נשמר בחשבון שלך" : "לחץ להגדרת יתרה התחלתית"}
           </p>
         </CardContent>
       </Card>
+
     </div>
   )
 }
 
 function MetricsSkeleton() {
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-      {Array.from({ length: 5 }).map((_, i) => (
+    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+      {[0, 1, 2].map((i) => (
         <Card key={i} className="border-0 shadow-sm bg-white">
           <CardContent className="p-5 space-y-2">
             <Skeleton className="h-3 w-20" />
