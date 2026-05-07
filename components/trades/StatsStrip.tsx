@@ -134,13 +134,13 @@ export function StatsStrip({ trades, loading, initialBalance, onUpdateBalance }:
 
   if (loading) {
     return (
-      <div className="rounded-xl border bg-white shadow-sm overflow-hidden flex h-[128px]">
-        <div className="w-[128px] shrink-0 border-r p-4 flex flex-col justify-center gap-2">
-          <Skeleton className="h-3 w-16" /><Skeleton className="h-6 w-20" /><Skeleton className="h-3 w-14" />
+      <div className="rounded-xl border bg-white shadow-sm overflow-hidden flex h-[196px]">
+        <div className="w-[190px] shrink-0 border-r p-6 flex flex-col justify-center gap-3">
+          <Skeleton className="h-3.5 w-16" /><Skeleton className="h-9 w-28" /><Skeleton className="h-3 w-20" />
         </div>
         <div className="flex-1 p-4"><Skeleton className="h-full w-full rounded-lg" /></div>
-        <div className="w-[128px] shrink-0 border-l p-4 flex flex-col justify-center gap-2">
-          <Skeleton className="h-3 w-16" /><Skeleton className="h-6 w-20" /><Skeleton className="h-3 w-14" />
+        <div className="w-[190px] shrink-0 border-l p-6 flex flex-col justify-center gap-3">
+          <Skeleton className="h-3.5 w-16" /><Skeleton className="h-9 w-28" /><Skeleton className="h-3 w-20" />
         </div>
       </div>
     )
@@ -150,23 +150,23 @@ export function StatsStrip({ trades, loading, initialBalance, onUpdateBalance }:
 
   return (
     <div
-      className="rounded-xl border bg-white shadow-sm overflow-hidden flex h-[128px]"
+      className="rounded-xl border bg-white shadow-sm overflow-hidden flex h-[196px]"
       dir="ltr"   /* strip always reads left→right so chart timeline is natural */
     >
 
       {/* ── LEFT: Total Realized P&L ── */}
-      <div className="w-[128px] shrink-0 border-r flex flex-col justify-center px-4 py-3 gap-0.5">
-        <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider leading-none">
+      <div className="w-[190px] shrink-0 border-r flex flex-col justify-center px-6 py-5 gap-2">
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider leading-none">
           P &amp; L
         </p>
         <p className={cn(
-          "text-lg font-bold tabular-nums leading-tight",
+          "text-3xl font-bold tabular-nums leading-tight",
           totalPnL > 0 ? "text-emerald-600" : totalPnL < 0 ? "text-rose-600" : "text-slate-700"
         )}>
           {totalPnL >= 0 ? "+" : ""}{formatUSD(totalPnL)}
         </p>
         {initialBalance > 0 && (
-          <p className="text-[10px] text-slate-400 leading-none tabular-nums">
+          <p className="text-xs text-slate-400 leading-none tabular-nums">
             {formatUSD(finalBalance)}
           </p>
         )}
@@ -183,7 +183,7 @@ export function StatsStrip({ trades, loading, initialBalance, onUpdateBalance }:
                 key={r}
                 onClick={() => setRange(r)}
                 className={cn(
-                  "px-1.5 py-0.5 rounded text-[10px] font-semibold transition-all",
+                  "px-2 py-1 rounded text-xs font-semibold transition-all",
                   range === r
                     ? "bg-slate-800 text-white"
                     : "text-slate-400 hover:text-slate-600"
@@ -233,7 +233,7 @@ export function StatsStrip({ trades, loading, initialBalance, onUpdateBalance }:
         {/* chart */}
         {hasChart ? (
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={points} margin={{ top: 26, right: 8, left: 0, bottom: 4 }}>
+            <AreaChart data={points} margin={{ top: 38, right: 8, left: 0, bottom: 4 }}>
               <defs>
                 <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%"   stopColor={lineColor} stopOpacity={0.15} />
@@ -266,19 +266,19 @@ export function StatsStrip({ trades, loading, initialBalance, onUpdateBalance }:
       </div>
 
       {/* ── RIGHT: Win Rate ── */}
-      <div className="w-[128px] shrink-0 border-l flex flex-col justify-center px-4 py-3 gap-0.5">
-        <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider leading-none text-right">
+      <div className="w-[190px] shrink-0 border-l flex flex-col justify-center px-6 py-5 gap-2">
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider leading-none text-right">
           WIN RATE
         </p>
         <p className={cn(
-          "text-lg font-bold tabular-nums leading-tight text-right",
+          "text-3xl font-bold tabular-nums leading-tight text-right",
           m.winRate !== null && m.winRate >= 50 ? "text-emerald-600"
             : m.winRate !== null ? "text-rose-600"
             : "text-slate-700"
         )}>
           {m.winRate !== null ? formatPercent(m.winRate) : "—"}
         </p>
-        <p className="text-[10px] text-slate-400 leading-none text-right">
+        <p className="text-xs text-slate-400 leading-none text-right">
           {m.closedTradeCount > 0 ? `${m.closedTradeCount} עסקאות` : "אין עדיין"}
         </p>
       </div>
