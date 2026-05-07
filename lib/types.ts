@@ -1,5 +1,6 @@
 export type StrategyType = "fundamental" | "technical" | "mixed"
 export type TradeStatus = "active" | "closed"
+export type TradeSide = "long" | "short"
 
 export interface PartialExit {
   quantity: number
@@ -21,6 +22,7 @@ export interface Trade {
   quantity: number
   fees: number
   status: TradeStatus
+  side: TradeSide
   notes: string | null
   partial_exits: PartialExit[]
   logo_url: string | null

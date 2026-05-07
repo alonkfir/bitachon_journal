@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
+import { TrendingUp, TrendingDown } from "lucide-react"
 import { Trade, TradeInsert } from "@/lib/types"
 import { riskPerTrade, riskRewardRatio, formatUSD } from "@/lib/calculations"
 import { createClient } from "@/lib/supabase/client"
@@ -18,6 +19,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
 import { StockSearchInput } from "./StockSearchInput"
+import { cn } from "@/lib/utils"
 
 interface TradeFormProps {
   open: boolean
@@ -36,6 +38,7 @@ const EMPTY: TradeInsert = {
   quantity: 0,
   fees: 0,
   status: "active",
+  side: "long",
   notes: null,
   logo_url: null,
 }
@@ -58,6 +61,7 @@ export function TradeForm({ open, trade, onClose }: TradeFormProps) {
         quantity: trade.quantity,
         fees: trade.fees,
         status: trade.status,
+        side: trade.side ?? "long",
         notes: trade.notes,
         logo_url: trade.logo_url,
       })
@@ -75,13 +79,11 @@ export function TradeForm({ open, trade, onClose }: TradeFormProps) {
     return isNaN(n) ? 0 : n
   }
 
-  // Called when user picks a stock from the autocomplete
   function handleStockSelect(symbol: string, logoUrl: string | null, livePrice: number | null) {
     setForm((prev) => ({
       ...prev,
       symbol: symbol.toUpperCase(),
       logo_url: logoUrl,
-      // Pre-fill entry price only if field is still empty
       entry_price: livePrice !== null && prev.entry_price === 0 ? livePrice : prev.entry_price,
     }))
   }
@@ -145,16 +147,45 @@ export function TradeForm({ open, trade, onClose }: TradeFormProps) {
         </SheetHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Symbol — autocomplete search */}
+
+          {/* Long / Short toggle */}
+          <div className="space-y-2">
+            <Label>כיוון עסקה</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => set("side", "long")}
+                className={cn(
+                  "flex items-center justify-center gap-2 rounded-lg border py-2.5 text-sm font-semibold transition-all",
+                  form.side === "long"
+                    ? "bg-emerald-50 border-emerald-400 text-emerald-700"
+                    : "border-slate-200 text-slate-400 hover:border-slate-300"
+                )}
+              >
+                <TrendingUp className="h-4 w-4" />
+                לונג (קנייה)
+              </button>
+              <button
+                type="button"
+                onClick={() => set("side", "short")}
+                className={cn(
+                  "flex items-center justify-center gap-2 rounded-lg border py-2.5 text-sm font-semibold transition-all",
+                  form.side === "short"
+                    ? "bg-rose-50 border-rose-400 text-rose-700"
+                    : "border-slate-200 text-slate-400 hover:border-slate-300"
+                )}
+              >
+                <TrendingDown className="h-4 w-4" />
+                שורט (מכירה)
+              </button>
+            </div>
+          </div>
+
+          {/* Symbol */}
           <div className="space-y-2">
             <Label>סמל נייר ערך</Label>
-            <StockSearchInput
-              value={form.symbol}
-              onSelect={handleStockSelect}
-            />
-            <p className="text-xs text-slate-400">
-              הקלד לחיפוש חי — מחיר הכניסה יתמלא אוטומטית
-            </p>
+            <StockSearchInput value={form.symbol} onSelect={handleStockSelect} />
+            <p className="text-xs text-slate-400">הקלד לחיפוש חי — מחיר הכניסה יתמלא אוטומטית</p>
           </div>
 
           {/* Entry date */}
@@ -173,40 +204,26 @@ export function TradeForm({ open, trade, onClose }: TradeFormProps) {
             <div className="space-y-2">
               <Label>מחיר כניסה</Label>
               <Input
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="0.00"
+                type="number" step="0.01" min="0" placeholder="0.00" dir="ltr"
                 value={form.entry_price || ""}
                 onChange={(e) => set("entry_price", num(e.target.value))}
-                dir="ltr"
               />
             </div>
             <div className="space-y-2">
               <Label className="text-rose-600">סטופ לוס</Label>
               <Input
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="0.00"
+                type="number" step="0.01" min="0" placeholder="0.00" dir="ltr"
                 value={form.stop_loss || ""}
                 onChange={(e) => set("stop_loss", num(e.target.value))}
-                dir="ltr"
                 className="border-rose-200 focus-visible:ring-rose-400"
               />
             </div>
             <div className="space-y-2">
               <Label className="text-emerald-600">יעד (אופציונלי)</Label>
               <Input
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="0.00"
+                type="number" step="0.01" min="0" placeholder="0.00" dir="ltr"
                 value={form.target_price ?? ""}
-                onChange={(e) =>
-                  set("target_price", e.target.value ? num(e.target.value) : null)
-                }
-                dir="ltr"
+                onChange={(e) => set("target_price", e.target.value ? num(e.target.value) : null)}
                 className="border-emerald-200 focus-visible:ring-emerald-400"
               />
             </div>
@@ -217,25 +234,17 @@ export function TradeForm({ open, trade, onClose }: TradeFormProps) {
             <div className="space-y-2">
               <Label>כמות</Label>
               <Input
-                type="number"
-                step="1"
-                min="0"
-                placeholder="100"
+                type="number" step="1" min="0" placeholder="100" dir="ltr"
                 value={form.quantity || ""}
                 onChange={(e) => set("quantity", num(e.target.value))}
-                dir="ltr"
               />
             </div>
             <div className="space-y-2">
               <Label>עמלות</Label>
               <Input
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="0.00"
+                type="number" step="0.01" min="0" placeholder="0.00" dir="ltr"
                 value={form.fees || ""}
                 onChange={(e) => set("fees", num(e.target.value))}
-                dir="ltr"
               />
             </div>
           </div>
@@ -243,9 +252,7 @@ export function TradeForm({ open, trade, onClose }: TradeFormProps) {
           {/* Live calculations */}
           {(risk > 0 || rrr !== null) && (
             <div className="rounded-lg bg-slate-50 p-4 space-y-2">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
-                חישוב בזמן אמת
-              </p>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">חישוב בזמן אמת</p>
               {risk > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500">סיכון (R)</span>
@@ -254,7 +261,7 @@ export function TradeForm({ open, trade, onClose }: TradeFormProps) {
               )}
               {rrr !== null && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">יחס סיכון/תגמול (RRR)</span>
+                  <span className="text-slate-500">יחס סיכון/תגמול</span>
                   <span className={`font-semibold ${rrr >= 2 ? "text-emerald-600" : "text-amber-600"}`}>
                     {rrr.toFixed(2)}{rrr < 2 && " ⚠ מתחת ל-2:1"}
                   </span>
@@ -269,19 +276,12 @@ export function TradeForm({ open, trade, onClose }: TradeFormProps) {
           <div className="space-y-2">
             <Label>מחיר יציאה (לסגירת עסקה)</Label>
             <Input
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="השאר ריק לעסקה פעילה"
+              type="number" step="0.01" min="0"
+              placeholder="השאר ריק לעסקה פעילה" dir="ltr"
               value={form.exit_price ?? ""}
-              onChange={(e) =>
-                set("exit_price", e.target.value ? num(e.target.value) : null)
-              }
-              dir="ltr"
+              onChange={(e) => set("exit_price", e.target.value ? num(e.target.value) : null)}
             />
-            <p className="text-xs text-slate-400">
-              הזנת מחיר יציאה תסמן את העסקה כ"סגורה" אוטומטית
-            </p>
+            <p className="text-xs text-slate-400">הזנת מחיר יציאה תסמן את העסקה כ"סגורה" אוטומטית</p>
           </div>
 
           {/* Notes */}

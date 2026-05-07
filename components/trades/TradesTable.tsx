@@ -1,10 +1,10 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
 import {
   Pencil, Trash2, BookOpen, MoreHorizontal,
-  TrendingDown, History, ChevronDown,
+  TrendingDown, TrendingUp, History, ChevronDown,
 } from "lucide-react"
 import { Trade } from "@/lib/types"
 import {
@@ -48,12 +48,9 @@ interface TradesTableProps {
   onRefresh: () => void
 }
 
-// ── helpers ──────────────────────────────────────────────────────────────────
+// ── helpers ───────────────────────────────────────────────────────────────────
 
-function toMonthKey(dateStr: string) {
-  // "YYYY-MM-DD" → "YYYY-MM"
-  return dateStr.slice(0, 7)
-}
+function toMonthKey(dateStr: string) { return dateStr.slice(0, 7) }
 
 function currentMonthKey() {
   const d = new Date()
@@ -63,45 +60,72 @@ function currentMonthKey() {
 function formatMonthHeading(key: string) {
   const [y, m] = key.split("-")
   return new Date(Number(y), Number(m) - 1, 1).toLocaleDateString("he-IL", {
-    month: "long",
-    year: "numeric",
+    month: "long", year: "numeric",
   })
+}
+
+function pctColor(pct: number) {
+  return pct > 0 ? "text-emerald-600" : pct < 0 ? "text-rose-600" : "text-slate-400"
+}
+
+// ── live prices hook ──────────────────────────────────────────────────────────
+
+function useLivePrices(trades: Trade[]) {
+  const [prices, setPrices] = useState<Record<string, number>>({})
+
+  useEffect(() => {
+    const symbols = [...new Set(trades.map((t) => t.symbol.toUpperCase()))]
+    if (symbols.length === 0) return
+
+    Promise.all(
+      symbols.map(async (sym) => {
+        try {
+          const res = await fetch(`/api/stock/quote?symbol=${sym}`)
+          const data = await res.json()
+          return [sym, data.c as number] as const
+        } catch {
+          return [sym, 0] as const
+        }
+      })
+    ).then((results) => {
+      const map: Record<string, number> = {}
+      for (const [sym, price] of results) {
+        if (price > 0) map[sym] = price
+      }
+      setPrices(map)
+    })
+  }, [trades])
+
+  return prices
 }
 
 // ── main component ────────────────────────────────────────────────────────────
 
 export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableProps) {
-  const [deleteId, setDeleteId]         = useState<string | null>(null)
-  const [deleting, setDeleting]         = useState(false)
+  const [deleteId, setDeleteId]             = useState<string | null>(null)
+  const [deleting, setDeleting]             = useState(false)
   const [quickSellTrade, setQuickSellTrade] = useState<Trade | null>(null)
-  const [historyTrade, setHistoryTrade] = useState<Trade | null>(null)
+  const [historyTrade, setHistoryTrade]     = useState<Trade | null>(null)
 
-  // Group + sort ---------------------------------------------------------------
+  const livePrices = useLivePrices(trades)
+
+  // Group by month, sort newest-first
   const monthGroups = useMemo(() => {
     const map = new Map<string, Trade[]>()
-
-    for (const trade of trades) {
-      const key = toMonthKey(trade.entry_date)
+    for (const t of trades) {
+      const key = toMonthKey(t.entry_date)
       if (!map.has(key)) map.set(key, [])
-      map.get(key)!.push(trade)
+      map.get(key)!.push(t)
     }
-
-    // Sort trades within each month newest-first
-    for (const group of map.values()) {
-      group.sort((a, b) => b.entry_date.localeCompare(a.entry_date))
-    }
-
-    // Return months newest-first
+    for (const g of map.values()) g.sort((a, b) => b.entry_date.localeCompare(a.entry_date))
     return [...map.entries()].sort(([a], [b]) => b.localeCompare(a))
   }, [trades])
 
-  // Accordion open state -------------------------------------------------------
   const initialOpen = useMemo(() => {
     const cur = currentMonthKey()
     const keys = monthGroups.map(([k]) => k)
-    // Open current month if it has trades, otherwise open the first (most recent)
-    const startKey = keys.includes(cur) ? cur : (keys[0] ?? "")
-    return new Set<string>(startKey ? [startKey] : [])
+    const start = keys.includes(cur) ? cur : (keys[0] ?? "")
+    return new Set<string>(start ? [start] : [])
   }, [monthGroups])
 
   const [openMonths, setOpenMonths] = useState<Set<string>>(initialOpen)
@@ -109,13 +133,11 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
   function toggleMonth(key: string) {
     setOpenMonths((prev) => {
       const next = new Set(prev)
-      if (next.has(key)) next.delete(key)
-      else next.add(key)
+      next.has(key) ? next.delete(key) : next.add(key)
       return next
     })
   }
 
-  // Delete handler -------------------------------------------------------------
   async function handleDelete() {
     if (!deleteId) return
     setDeleting(true)
@@ -126,8 +148,6 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
     setDeleting(false)
     setDeleteId(null)
   }
-
-  // ── guards ─────────────────────────────────────────────────────────────────
 
   if (loading) return <TableSkeleton />
 
@@ -141,49 +161,36 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
     )
   }
 
-  // ── render ──────────────────────────────────────────────────────────────────
-
   return (
     <>
       <div className="space-y-3">
         {monthGroups.map(([key, monthTrades]) => {
-          const isOpen = openMonths.has(key)
-
-          // Monthly summary numbers
-          const monthPnL = monthTrades.reduce<number>((sum, t) => sum + (tradePnL(t) ?? 0), 0)
-          const monthR   = monthTrades.reduce<number>((sum, t) => sum + (rMultiple(t) ?? 0), 0)
+          const isOpen  = openMonths.has(key)
+          const monthPnL = monthTrades.reduce<number>((s, t) => s + (tradePnL(t) ?? 0), 0)
+          const monthR   = monthTrades.reduce<number>((s, t) => s + (rMultiple(t) ?? 0), 0)
           const hasPnL   = monthTrades.some((t) => tradePnL(t) !== null)
           const hasR     = monthTrades.some((t) => rMultiple(t) !== null)
 
           return (
-            <div
-              key={key}
-              className="rounded-xl border bg-white shadow-sm overflow-hidden"
-            >
-              {/* ── Month header (click to expand/collapse) ── */}
+            <div key={key} className="rounded-xl border bg-white shadow-sm overflow-hidden">
+
+              {/* ── Accordion header ── */}
               <button
                 type="button"
                 onClick={() => toggleMonth(key)}
-                className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors cursor-pointer"
+                className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
               >
-                {/* Left: month name + count */}
+                {/* Right side: month + count + summary (RTL: this is visually on the right) */}
                 <div className="flex items-center gap-3">
                   <span className="font-semibold text-slate-800 text-sm">
                     {formatMonthHeading(key)}
                   </span>
-                  <span className="text-xs text-slate-400">
-                    {monthTrades.length} עסקאות
-                  </span>
-                </div>
+                  <span className="text-xs text-slate-400">{monthTrades.length} עסקאות</span>
 
-                {/* Right: summary + chevron */}
-                <div className="flex items-center gap-4">
                   {hasPnL && (
                     <span className={cn(
                       "text-sm font-semibold tabular-nums",
-                      monthPnL > 0 ? "text-emerald-600"
-                        : monthPnL < 0 ? "text-rose-600"
-                        : "text-slate-500"
+                      monthPnL > 0 ? "text-emerald-600" : monthPnL < 0 ? "text-rose-600" : "text-slate-400"
                     )}>
                       {monthPnL >= 0 ? "+" : ""}{formatUSD(monthPnL)}
                     </span>
@@ -196,33 +203,36 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                       {formatR(monthR)}
                     </span>
                   )}
-                  <ChevronDown className={cn(
-                    "h-4 w-4 text-slate-400 shrink-0 transition-transform duration-200",
-                    isOpen && "rotate-180"
-                  )} />
                 </div>
+
+                {/* Left side: chevron only */}
+                <ChevronDown className={cn(
+                  "h-4 w-4 text-slate-400 shrink-0 transition-transform duration-200",
+                  isOpen && "rotate-180"
+                )} />
               </button>
 
               {/* ── Collapsible panel ── */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateRows: isOpen ? "1fr" : "0fr",
-                  transition: "grid-template-rows 220ms ease",
-                }}
-              >
+              <div style={{
+                display: "grid",
+                gridTemplateRows: isOpen ? "1fr" : "0fr",
+                transition: "grid-template-rows 220ms ease",
+              }}>
                 <div style={{ overflow: "hidden" }}>
                   <div className="border-t overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow className="bg-slate-50 hover:bg-slate-50">
+                          {/* Column order: rightmost → leftmost in RTL */}
                           <TableHead className="text-slate-600 font-semibold text-right">סמל</TableHead>
+                          <TableHead className="text-slate-600 font-semibold text-left">מחיר חי</TableHead>
+                          <TableHead className="text-slate-600 font-semibold text-right">כיוון</TableHead>
                           <TableHead className="text-slate-600 font-semibold text-right">תאריך</TableHead>
                           <TableHead className="text-slate-600 font-semibold text-left">כניסה</TableHead>
                           <TableHead className="text-slate-600 font-semibold text-left">סטופ</TableHead>
                           <TableHead className="text-slate-600 font-semibold text-left">כמות</TableHead>
                           <TableHead className="text-slate-600 font-semibold text-left">סיכון $</TableHead>
-                          <TableHead className="w-[90px]" />
+                          <TableHead className="w-[84px]" />
                           <TableHead className="text-slate-600 font-semibold text-left">רווח/הפסד</TableHead>
                           <TableHead className="text-slate-600 font-semibold text-left">R×</TableHead>
                           <TableHead className="text-slate-600 font-semibold text-right">סטטוס</TableHead>
@@ -237,15 +247,22 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                           const remaining = remainingQty(trade)
                           const hasPartials = trade.partial_exits?.length > 0
                           const isActive  = remaining > 0
+                          const isLong    = (trade.side ?? "long") === "long"
+
+                          const livePrice = livePrices[trade.symbol.toUpperCase()]
+                          const liveDiff  = livePrice ? livePrice - trade.entry_price : null
+                          const livePct   = liveDiff !== null ? (liveDiff / trade.entry_price) * 100 : null
 
                           return (
                             <TableRow key={trade.id} className="hover:bg-slate-50/50">
 
-                              {/* Symbol + logo */}
-                              <TableCell className="font-bold text-slate-900 tracking-wide text-right py-3">
+                              {/* Symbol + logo — rightmost column */}
+                              <TableCell className="text-right py-3">
                                 <div className="flex items-center gap-2 justify-end">
                                   <div>
-                                    <div>{trade.symbol.toUpperCase()}</div>
+                                    <div className="font-bold text-slate-900 tracking-wide">
+                                      {trade.symbol.toUpperCase()}
+                                    </div>
                                     {hasPartials && (
                                       <div className="text-xs text-slate-400 font-normal leading-tight">
                                         {trade.partial_exits.length} יציאות
@@ -254,6 +271,35 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                                   </div>
                                   <TickerAvatar symbol={trade.symbol} logoUrl={trade.logo_url} />
                                 </div>
+                              </TableCell>
+
+                              {/* Live price */}
+                              <TableCell className="text-left tabular-nums text-sm">
+                                {livePrice ? (
+                                  <div>
+                                    <div className="font-medium text-slate-800">{formatUSD(livePrice)}</div>
+                                    {livePct !== null && (
+                                      <div className={cn("text-xs", pctColor(livePct))}>
+                                        {livePct >= 0 ? "+" : ""}{livePct.toFixed(2)}%
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <span className="text-slate-300 text-xs">—</span>
+                                )}
+                              </TableCell>
+
+                              {/* Side: Long / Short */}
+                              <TableCell className="text-right">
+                                <span className={cn(
+                                  "inline-flex items-center gap-1 text-xs font-semibold",
+                                  isLong ? "text-emerald-600" : "text-rose-600"
+                                )}>
+                                  {isLong
+                                    ? <><TrendingUp className="h-3 w-3" /> לונג</>
+                                    : <><TrendingDown className="h-3 w-3" /> שורט</>
+                                  }
+                                </span>
                               </TableCell>
 
                               {/* Date */}
@@ -271,7 +317,7 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                                 {formatUSD(trade.stop_loss)}
                               </TableCell>
 
-                              {/* Quantity / remaining */}
+                              {/* Quantity */}
                               <TableCell className="text-left tabular-nums text-sm text-slate-700">
                                 {hasPartials && remaining < trade.quantity ? (
                                   <span>
@@ -291,9 +337,8 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                               <TableCell className="px-2">
                                 {isActive && (
                                   <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-7 px-2.5 text-xs border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 hover:text-emerald-800 gap-1 whitespace-nowrap"
+                                    variant="outline" size="sm"
+                                    className="h-7 px-2.5 text-xs border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 gap-1 whitespace-nowrap"
                                     onClick={() => setQuickSellTrade(trade)}
                                   >
                                     <TrendingDown className="h-3 w-3" />
@@ -306,9 +351,7 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                               <TableCell className="text-left tabular-nums text-sm font-semibold">
                                 {pnl !== null ? (
                                   <span className={cn(
-                                    pnl > 0 ? "text-emerald-600"
-                                      : pnl < 0 ? "text-rose-600"
-                                      : "text-slate-500"
+                                    pnl > 0 ? "text-emerald-600" : pnl < 0 ? "text-rose-600" : "text-slate-500"
                                   )}>
                                     {pnl >= 0 ? "+" : ""}{formatUSD(pnl)}
                                   </span>
@@ -324,7 +367,7 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                                 ) : <span className="text-slate-300">—</span>}
                               </TableCell>
 
-                              {/* Status badge */}
+                              {/* Status badge — red when closed at a loss */}
                               <TableCell className="text-right">
                                 {isActive ? (
                                   <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-100 border-0 text-xs">
@@ -335,6 +378,8 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                                     "border-0 text-xs",
                                     pnl !== null && pnl > 0
                                       ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
+                                      : pnl !== null && pnl < 0
+                                      ? "bg-rose-100 text-rose-700 hover:bg-rose-100"
                                       : "bg-slate-100 text-slate-500 hover:bg-slate-100"
                                   )}>
                                     סגור
@@ -342,7 +387,7 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                                 )}
                               </TableCell>
 
-                              {/* Actions dropdown */}
+                              {/* Actions */}
                               <TableCell className="px-1">
                                 <DropdownMenu>
                                   <DropdownMenuTrigger
