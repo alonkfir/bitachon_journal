@@ -23,6 +23,7 @@ export interface Trade {
   status: TradeStatus
   notes: string | null
   partial_exits: PartialExit[]
+  logo_url: string | null
   created_at: string
   updated_at: string
 }

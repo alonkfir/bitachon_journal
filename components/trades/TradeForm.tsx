@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
+import { StockSearchInput } from "./StockSearchInput"
 
 interface TradeFormProps {
   open: boolean
@@ -36,6 +37,7 @@ const EMPTY: TradeInsert = {
   fees: 0,
   status: "active",
   notes: null,
+  logo_url: null,
 }
 
 export function TradeForm({ open, trade, onClose }: TradeFormProps) {
@@ -57,6 +59,7 @@ export function TradeForm({ open, trade, onClose }: TradeFormProps) {
         fees: trade.fees,
         status: trade.status,
         notes: trade.notes,
+        logo_url: trade.logo_url,
       })
     } else {
       setForm(EMPTY)
@@ -70,6 +73,17 @@ export function TradeForm({ open, trade, onClose }: TradeFormProps) {
   function num(val: string) {
     const n = parseFloat(val)
     return isNaN(n) ? 0 : n
+  }
+
+  // Called when user picks a stock from the autocomplete
+  function handleStockSelect(symbol: string, logoUrl: string | null, livePrice: number | null) {
+    setForm((prev) => ({
+      ...prev,
+      symbol: symbol.toUpperCase(),
+      logo_url: logoUrl,
+      // Pre-fill entry price only if field is still empty
+      entry_price: livePrice !== null && prev.entry_price === 0 ? livePrice : prev.entry_price,
+    }))
   }
 
   const risk = useMemo(
@@ -131,16 +145,16 @@ export function TradeForm({ open, trade, onClose }: TradeFormProps) {
         </SheetHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Symbol */}
+          {/* Symbol — autocomplete search */}
           <div className="space-y-2">
             <Label>סמל נייר ערך</Label>
-            <Input
-              placeholder="AAPL"
+            <StockSearchInput
               value={form.symbol}
-              onChange={(e) => set("symbol", e.target.value)}
-              dir="ltr"
-              className="uppercase"
+              onSelect={handleStockSelect}
             />
+            <p className="text-xs text-slate-400">
+              הקלד לחיפוש חי — מחיר הכניסה יתמלא אוטומטית
+            </p>
           </div>
 
           {/* Entry date */}
@@ -241,11 +255,8 @@ export function TradeForm({ open, trade, onClose }: TradeFormProps) {
               {rrr !== null && (
                 <div className="flex justify-between text-sm">
                   <span className="text-slate-500">יחס סיכון/תגמול (RRR)</span>
-                  <span
-                    className={`font-semibold ${rrr >= 2 ? "text-emerald-600" : "text-amber-600"}`}
-                  >
-                    {rrr.toFixed(2)}
-                    {rrr < 2 && " ⚠ מתחת ל-2:1"}
+                  <span className={`font-semibold ${rrr >= 2 ? "text-emerald-600" : "text-amber-600"}`}>
+                    {rrr.toFixed(2)}{rrr < 2 && " ⚠ מתחת ל-2:1"}
                   </span>
                 </div>
               )}
@@ -254,7 +265,7 @@ export function TradeForm({ open, trade, onClose }: TradeFormProps) {
 
           <Separator />
 
-          {/* Exit price (close a trade) */}
+          {/* Exit price */}
           <div className="space-y-2">
             <Label>מחיר יציאה (לסגירת עסקה)</Label>
             <Input

@@ -38,6 +38,7 @@ import { ConfirmDialog } from "@/components/shared/ConfirmDialog"
 import { EmptyState } from "@/components/shared/EmptyState"
 import { QuickSellDialog } from "./QuickSellDialog"
 import { ExitHistoryDialog } from "./ExitHistoryDialog"
+import { TickerAvatar } from "./StockSearchInput"
 import { cn } from "@/lib/utils"
 
 interface TradesTableProps {
@@ -240,14 +241,19 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                           return (
                             <TableRow key={trade.id} className="hover:bg-slate-50/50">
 
-                              {/* Symbol */}
+                              {/* Symbol + logo */}
                               <TableCell className="font-bold text-slate-900 tracking-wide text-right py-3">
-                                <div>{trade.symbol.toUpperCase()}</div>
-                                {hasPartials && (
-                                  <div className="text-xs text-slate-400 font-normal leading-tight">
-                                    {trade.partial_exits.length} יציאות
+                                <div className="flex items-center gap-2 justify-end">
+                                  <div>
+                                    <div>{trade.symbol.toUpperCase()}</div>
+                                    {hasPartials && (
+                                      <div className="text-xs text-slate-400 font-normal leading-tight">
+                                        {trade.partial_exits.length} יציאות
+                                      </div>
+                                    )}
                                   </div>
-                                )}
+                                  <TickerAvatar symbol={trade.symbol} logoUrl={trade.logo_url} />
+                                </div>
                               </TableCell>
 
                               {/* Date */}
