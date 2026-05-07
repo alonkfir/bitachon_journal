@@ -4,10 +4,9 @@ import { useEffect, useState } from "react"
 import { Plus } from "lucide-react"
 import { Trade } from "@/lib/types"
 import { createClient } from "@/lib/supabase/client"
-import { MetricsBar } from "@/components/trades/MetricsBar"
+import { StatsStrip } from "@/components/trades/StatsStrip"
 import { TradesTable } from "@/components/trades/TradesTable"
 import { TradeForm } from "@/components/trades/TradeForm"
-import { EquityCurve } from "@/components/trades/EquityCurve"
 import { Button } from "@/components/ui/button"
 
 export default function SwingPage() {
@@ -19,16 +18,13 @@ export default function SwingPage() {
 
   async function fetchAll() {
     const supabase = createClient()
-
     const [tradesRes, settingsRes] = await Promise.all([
       supabase.from("trades").select("*").order("entry_date", { ascending: false }),
       supabase.from("user_settings").select("initial_balance").maybeSingle(),
     ])
-
     if (!tradesRes.error && tradesRes.data) setTrades(tradesRes.data)
-    if (!settingsRes.error && settingsRes.data) {
+    if (!settingsRes.error && settingsRes.data)
       setInitialBalance(Number(settingsRes.data.initial_balance))
-    }
     setLoading(false)
   }
 
@@ -38,11 +34,9 @@ export default function SwingPage() {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-
-    await supabase.from("user_settings").upsert(
-      { user_id: user.id, initial_balance: value },
-      { onConflict: "user_id" }
-    )
+    await supabase
+      .from("user_settings")
+      .upsert({ user_id: user.id, initial_balance: value }, { onConflict: "user_id" })
     setInitialBalance(value)
   }
 
@@ -70,14 +64,12 @@ export default function SwingPage() {
         </Button>
       </div>
 
-      <MetricsBar
+      <StatsStrip
         trades={trades}
         loading={loading}
         initialBalance={initialBalance}
         onUpdateBalance={handleUpdateBalance}
       />
-
-      <EquityCurve trades={trades} initialBalance={initialBalance} />
 
       <TradesTable
         trades={trades}
