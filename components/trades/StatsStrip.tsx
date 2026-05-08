@@ -94,10 +94,10 @@ function ChartTooltip({ active, payload }: { active?: boolean; payload?: { paylo
 // ── main component ────────────────────────────────────────────────────────────
 
 export function StatsStrip({ trades, loading, initialBalance, onUpdateBalance }: StatsStripProps) {
-  const [range, setRange]           = useState<Range>("ALL")
-  const [editBal, setEditBal]       = useState(false)
-  const [draft, setDraft]           = useState("")
-  const [saving, setSaving]         = useState(false)
+  const [range, setRange]     = useState<Range>("ALL")
+  const [editBal, setEditBal] = useState(false)
+  const [draft, setDraft]     = useState("")
+  const [saving, setSaving]   = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const m = useMemo(() => computeMetrics(trades), [trades])
@@ -134,46 +134,91 @@ export function StatsStrip({ trades, loading, initialBalance, onUpdateBalance }:
 
   if (loading) {
     return (
-      <div className="rounded-xl border bg-white shadow-sm overflow-hidden flex h-[196px]">
-        <div className="w-[190px] shrink-0 border-r p-6 flex flex-col justify-center gap-3">
-          <Skeleton className="h-3.5 w-16" /><Skeleton className="h-9 w-28" /><Skeleton className="h-3 w-20" />
+      <div className="rounded-xl border bg-white shadow-sm overflow-hidden flex flex-wrap md:flex-nowrap md:h-[196px]">
+        {/* P&L skeleton */}
+        <div className="w-1/2 md:w-[190px] shrink-0 border-b md:border-b-0 border-r p-4 md:p-6 flex flex-col justify-center gap-2 md:gap-3 order-1">
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-7 md:h-9 w-20 md:w-28" />
+          <Skeleton className="h-3 w-14 md:w-20" />
         </div>
-        <div className="flex-1 p-4"><Skeleton className="h-full w-full rounded-lg" /></div>
-        <div className="w-[190px] shrink-0 border-l p-6 flex flex-col justify-center gap-3">
-          <Skeleton className="h-3.5 w-16" /><Skeleton className="h-9 w-28" /><Skeleton className="h-3 w-20" />
+        {/* Win Rate skeleton */}
+        <div className="w-1/2 md:w-[190px] shrink-0 border-b md:border-b-0 md:border-l p-4 md:p-6 flex flex-col items-end justify-center gap-2 md:gap-3 order-2 md:order-3">
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-7 md:h-9 w-20 md:w-28" />
+          <Skeleton className="h-3 w-14 md:w-20" />
+        </div>
+        {/* Chart skeleton */}
+        <div className="w-full md:flex-1 h-[150px] md:h-auto p-4 order-3 md:order-2">
+          <Skeleton className="h-full w-full rounded-lg" />
         </div>
       </div>
     )
   }
 
   // ── render ──────────────────────────────────────────────────────────────────
+  // Layout strategy:
+  //   Mobile  (flex-wrap):   [P&L | Win Rate] on row 1, [Chart] on row 2
+  //   Desktop (flex-nowrap): [P&L | Chart | Win Rate] in one row
+  // Achieved via CSS `order` — P&L=1, Win Rate=2→3, Chart=3→2
 
   return (
     <div
-      className="rounded-xl border bg-white shadow-sm overflow-hidden flex h-[196px]"
-      dir="ltr"   /* strip always reads left→right so chart timeline is natural */
+      className="rounded-xl border bg-white shadow-sm overflow-hidden flex flex-wrap md:flex-nowrap md:h-[196px]"
+      dir="ltr"
     >
 
-      {/* ── LEFT: Total Realized P&L ── */}
-      <div className="w-[190px] shrink-0 border-r flex flex-col justify-center px-6 py-5 gap-2">
-        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider leading-none">
+      {/* ── P&L card — order 1 on both layouts ── */}
+      <div className={cn(
+        "w-1/2 md:w-[190px] shrink-0",
+        "border-b md:border-b-0 border-r",
+        "flex flex-col justify-center px-4 md:px-6 py-3 md:py-5 gap-1 md:gap-2",
+        "order-1",
+      )}>
+        <p className="text-[10px] md:text-xs font-semibold text-slate-400 uppercase tracking-wider leading-none">
           P &amp; L
         </p>
         <p className={cn(
-          "text-3xl font-bold tabular-nums leading-tight",
+          "text-xl md:text-3xl font-bold tabular-nums leading-tight",
           totalPnL > 0 ? "text-emerald-600" : totalPnL < 0 ? "text-rose-600" : "text-slate-700"
         )}>
           {totalPnL >= 0 ? "+" : ""}{formatUSD(totalPnL)}
         </p>
         {initialBalance > 0 && (
-          <p className="text-xs text-slate-400 leading-none tabular-nums">
+          <p className="text-[10px] md:text-xs text-slate-400 leading-none tabular-nums">
             {formatUSD(finalBalance)}
           </p>
         )}
       </div>
 
-      {/* ── MIDDLE: Equity Curve ── */}
-      <div className="flex-1 min-w-0 relative">
+      {/* ── Win Rate card — order 2 on mobile (next to P&L), order 3 on desktop (after chart) ── */}
+      <div className={cn(
+        "w-1/2 md:w-[190px] shrink-0",
+        "border-b md:border-b-0 md:border-l",
+        "flex flex-col justify-center px-4 md:px-6 py-3 md:py-5 gap-1 md:gap-2",
+        "order-2 md:order-3",
+      )}>
+        <p className="text-[10px] md:text-xs font-semibold text-slate-400 uppercase tracking-wider leading-none text-right">
+          WIN RATE
+        </p>
+        <p className={cn(
+          "text-xl md:text-3xl font-bold tabular-nums leading-tight text-right",
+          m.winRate !== null && m.winRate >= 50 ? "text-emerald-600"
+            : m.winRate !== null ? "text-rose-600"
+            : "text-slate-700"
+        )}>
+          {m.winRate !== null ? formatPercent(m.winRate) : "—"}
+        </p>
+        <p className="text-[10px] md:text-xs text-slate-400 leading-none text-right">
+          {m.closedTradeCount > 0 ? `${m.closedTradeCount} עסקאות` : "אין עדיין"}
+        </p>
+      </div>
+
+      {/* ── Chart — order 3 on mobile (below cards), order 2 on desktop (between cards) ── */}
+      <div className={cn(
+        "w-full md:w-auto md:flex-1 min-w-0 relative",
+        "h-[150px] md:h-auto",
+        "order-3 md:order-2",
+      )}>
 
         {/* overlay: range filters + balance edit icon */}
         <div className="absolute top-2 inset-x-2 flex items-center justify-between z-10 pointer-events-none">
@@ -194,7 +239,6 @@ export function StatsStrip({ trades, loading, initialBalance, onUpdateBalance }:
             ))}
           </div>
 
-          {/* initial balance edit */}
           <div className="pointer-events-auto">
             {editBal ? (
               <div className="flex items-center gap-1 bg-white/95 rounded px-1.5 py-0.5 border shadow-sm">
@@ -263,24 +307,6 @@ export function StatsStrip({ trades, loading, initialBalance, onUpdateBalance }:
             </p>
           </div>
         )}
-      </div>
-
-      {/* ── RIGHT: Win Rate ── */}
-      <div className="w-[190px] shrink-0 border-l flex flex-col justify-center px-6 py-5 gap-2">
-        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider leading-none text-right">
-          WIN RATE
-        </p>
-        <p className={cn(
-          "text-3xl font-bold tabular-nums leading-tight text-right",
-          m.winRate !== null && m.winRate >= 50 ? "text-emerald-600"
-            : m.winRate !== null ? "text-rose-600"
-            : "text-slate-700"
-        )}>
-          {m.winRate !== null ? formatPercent(m.winRate) : "—"}
-        </p>
-        <p className="text-xs text-slate-400 leading-none text-right">
-          {m.closedTradeCount > 0 ? `${m.closedTradeCount} עסקאות` : "אין עדיין"}
-        </p>
       </div>
 
     </div>

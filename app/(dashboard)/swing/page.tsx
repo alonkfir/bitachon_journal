@@ -52,13 +52,13 @@ export default function SwingPage() {
   }
 
   return (
-    <div className="space-y-6 w-full">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">יומן סווינג</h1>
-          <p className="text-slate-500 text-sm mt-1">עקוב ונתח את עסקאות הסווינג שלך</p>
+    <div className="space-y-6 w-full pb-24 md:pb-0">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 truncate">יומן סווינג</h1>
+          <p className="text-slate-500 text-xs md:text-sm mt-0.5">עקוב ונתח את עסקאות הסווינג שלך</p>
         </div>
-        <Button onClick={() => setFormOpen(true)}>
+        <Button onClick={() => setFormOpen(true)} className="shrink-0 hidden md:flex">
           <Plus className="h-4 w-4 ml-1" />
           עסקה חדשה
         </Button>
@@ -79,6 +79,16 @@ export default function SwingPage() {
       />
 
       <TradeForm open={formOpen} trade={editTrade} onClose={handleFormClose} />
+
+      {/* Floating action button — mobile only */}
+      <button
+        onClick={() => setFormOpen(true)}
+        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 md:hidden flex items-center gap-2 bg-slate-900 text-white px-6 py-3.5 rounded-full shadow-lg hover:bg-slate-700 active:scale-95 transition-all text-sm font-semibold"
+        aria-label="עסקה חדשה"
+      >
+        <Plus className="h-5 w-5" />
+        עסקה חדשה
+      </button>
     </div>
   )
 }
