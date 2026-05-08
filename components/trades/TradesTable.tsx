@@ -74,15 +74,17 @@ function useLivePrices(trades: Trade[]) {
   const [prices, setPrices] = useState<Record<string, number>>({})
 
   useEffect(() => {
-    const symbols = [...new Set(trades.map((t) => t.symbol.toUpperCase()))]
+    // Always trim + uppercase so the key in the map always matches
+    // the lookup in both desktop rows and mobile cards.
+    const symbols = [...new Set(trades.map((t) => t.symbol.trim().toUpperCase()))]
     if (symbols.length === 0) return
 
     Promise.all(
       symbols.map(async (sym) => {
         try {
-          const res = await fetch(`/api/stock/quote?symbol=${sym}`)
+          const res = await fetch(`/api/stock/quote?symbol=${encodeURIComponent(sym)}`)
           const data = await res.json()
-          return [sym, data.c as number] as const
+          return [sym, typeof data.c === "number" ? data.c : 0] as const
         } catch {
           return [sym, 0] as const
         }
@@ -119,8 +121,11 @@ function MobileTradeCard({ trade, livePrices, onEdit, onHistory, onQuickSell, on
   const isActive    = remaining > 0
   const isLong      = (trade.side ?? "long") === "long"
 
-  const livePrice = livePrices[trade.symbol.toUpperCase()]
-  const liveDiff  = livePrice ? livePrice - trade.entry_price : null
+  // Use same trim+uppercase normalization as the hook so keys always match
+  const symKey    = trade.symbol.trim().toUpperCase()
+  const rawPrice  = livePrices[symKey]
+  const livePrice: number | null = rawPrice && rawPrice > 0 ? rawPrice : null
+  const liveDiff  = livePrice !== null ? livePrice - trade.entry_price : null
   const livePct   = liveDiff !== null ? (liveDiff / trade.entry_price) * 100 : null
 
   return (
@@ -189,7 +194,7 @@ function MobileTradeCard({ trade, livePrices, onEdit, onHistory, onQuickSell, on
         </div>
         <div>
           <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-0.5">מחיר חי</p>
-          {livePrice ? (
+          {livePrice !== null ? (
             <p className="text-sm font-semibold tabular-nums">
               <span className="text-slate-800">{formatUSD(livePrice)}</span>
               {livePct !== null && (
@@ -416,8 +421,10 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                           const isActive  = remaining > 0
                           const isLong    = (trade.side ?? "long") === "long"
 
-                          const livePrice = livePrices[trade.symbol.toUpperCase()]
-                          const liveDiff  = livePrice ? livePrice - trade.entry_price : null
+                          const _symKey   = trade.symbol.trim().toUpperCase()
+                          const _raw      = livePrices[_symKey]
+                          const livePrice: number | null = _raw && _raw > 0 ? _raw : null
+                          const liveDiff  = livePrice !== null ? livePrice - trade.entry_price : null
                           const livePct   = liveDiff !== null ? (liveDiff / trade.entry_price) * 100 : null
 
                           return (
@@ -440,7 +447,7 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                               </TableCell>
 
                               <TableCell className="text-left tabular-nums text-sm">
-                                {livePrice ? (
+                                {livePrice !== null ? (
                                   <div>
                                     <div className="font-medium text-slate-800">{formatUSD(livePrice)}</div>
                                     {livePct !== null && (
