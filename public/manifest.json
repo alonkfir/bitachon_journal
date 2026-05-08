@@ -1,0 +1,28 @@
+{
+  "name": "יומן הביטחון",
+  "short_name": "ביטחון",
+  "description": "כלי המסחר המקצועי לתלמידי קורס הביטחון בשוק ההון",
+  "start_url": "/swing",
+  "id": "/swing",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f172a",
+  "lang": "he",
+  "dir": "rtl",
+  "categories": ["finance", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/192",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/512",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
