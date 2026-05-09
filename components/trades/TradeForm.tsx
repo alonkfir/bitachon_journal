@@ -185,7 +185,7 @@ export function TradeForm({ open, trade, onClose }: TradeFormProps) {
           <div className="space-y-2">
             <Label>סמל נייר ערך</Label>
             <StockSearchInput value={form.symbol} onSelect={handleStockSelect} />
-            <p className="text-xs text-slate-400">הקלד לחיפוש חי — מחיר הכניסה יתמלא אוטומטית</p>
+            <p className="text-xs text-slate-400">הקלד לחיפוש · לחץ Enter או &quot;השתמש ישירות&quot; לסמלים כמו METU, ETF וכו&#39;</p>
           </div>
 
           {/* Entry date */}
