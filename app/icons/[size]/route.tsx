@@ -1,47 +1,9 @@
 import { ImageResponse } from "next/og"
 import { NextRequest } from "next/server"
+import fs from "fs"
+import path from "path"
 
-export const runtime = "edge"
-
-function TradeIcon({ dim }: { dim: number }) {
-  const inner = Math.round(dim * 0.68)
-  return (
-    <div
-      style={{
-        width: dim,
-        height: dim,
-        background: "#0f172a",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <svg
-        width={inner}
-        height={inner}
-        viewBox="0 0 100 100"
-        style={{ display: "block" }}
-      >
-        <polyline
-          points="6,78 26,56 48,30 68,46 94,12"
-          stroke="#10b981"
-          strokeWidth="9"
-          fill="none"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <circle cx="94" cy="12" r="9" fill="#10b981" />
-        {/* Subtle baseline */}
-        <line
-          x1="6" y1="90" x2="94" y2="90"
-          stroke="#1e293b"
-          strokeWidth="4"
-          strokeLinecap="round"
-        />
-      </svg>
-    </div>
-  )
-}
+export const runtime = "nodejs"   // needs fs — cannot be edge
 
 export async function GET(
   _req: NextRequest,
@@ -54,5 +16,32 @@ export async function GET(
     return new Response("Not found", { status: 404 })
   }
 
-  return new ImageResponse(<TradeIcon dim={dim} />, { width: dim, height: dim })
+  const imgPath = path.join(process.cwd(), "public", "logo.png")
+  const imgData = fs.readFileSync(imgPath)
+  const base64  = imgData.toString("base64")
+  const dataUrl = `data:image/png;base64,${base64}`
+
+  const bg = dim === 512 ? "#f5e6b8" : "#ffffff"
+
+  return new ImageResponse(
+    <div
+      style={{
+        width: dim,
+        height: dim,
+        background: bg,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={dataUrl}
+        width={Math.round(dim * 0.85)}
+        height={Math.round(dim * 0.85)}
+        alt="logo"
+      />
+    </div>,
+    { width: dim, height: dim },
+  )
 }
