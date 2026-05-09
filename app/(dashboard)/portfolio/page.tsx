@@ -59,82 +59,67 @@ export default function PortfolioPage() {
         </Button>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Pie Chart */}
-        <Card className="border-0 shadow-sm bg-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold text-slate-700">פיזור לפי ניירות ערך</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="flex items-center justify-center h-64">
-                <Skeleton className="h-52 w-52 rounded-full" />
-              </div>
-            ) : allocations.length > 0 ? (
-              <AllocationChart allocations={allocations} />
-            ) : (
-              <div className="flex items-center justify-center h-64 text-slate-400 text-sm">
-                אין נתונים להצגה
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Summary */}
-        <div className="space-y-4">
-          <Card className="border-0 shadow-sm bg-white">
-            <CardContent className="p-5">
-              <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
-                שווי תיק כולל
-              </p>
-              {loading ? (
-                <Skeleton className="h-8 w-36 mt-1" />
-              ) : (
-                <p className="text-3xl font-bold text-slate-900 tabular-nums">
-                  {formatUSD(totalValue)}
-                </p>
-              )}
-              <p className="text-xs text-slate-400 mt-1">{holdings.length} ניירות ערך</p>
-            </CardContent>
-          </Card>
-
-          {/* Sector breakdown list */}
-          {!loading && allocations.length > 0 && (
-            <Card className="border-0 shadow-sm bg-white">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-semibold text-slate-700">פירוט לפי נייר ערך</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="space-y-2">
-                  {allocations.map((a, i) => (
-                    <div key={a.ticker} className="flex items-center gap-3">
-                      <div
-                        className="h-3 w-3 rounded-full shrink-0"
-                        style={{
-                          background: [
-                            "#14b8a6","#8b5cf6","#f97316","#06b6d4",
-                            "#a855f7","#f59e0b","#0ea5e9","#ec4899",
-                            "#10b981","#6366f1",
-                          ][i % 10],
-                        }}
-                      />
-                      <span className="text-sm text-slate-600 flex-1">{a.ticker}</span>
-                      <span className="text-sm font-medium text-slate-700 tabular-nums">
-                        {a.percentage.toFixed(1)}%
-                      </span>
-                      <span className="text-xs text-slate-400 tabular-nums w-24 text-left">
-                        {formatUSD(a.amount)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+      {/* Total Account Size */}
+      <Card className="border-0 shadow-sm bg-white">
+        <CardContent className="p-5">
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">
+            שווי תיק כולל
+          </p>
+          {loading ? (
+            <Skeleton className="h-9 w-44 mt-1" />
+          ) : (
+            <p className="text-4xl font-bold text-slate-900 tabular-nums">
+              {formatUSD(totalValue)}
+            </p>
           )}
-        </div>
-      </div>
+          <p className="text-xs text-slate-400 mt-1">{holdings.length} ניירות ערך</p>
+        </CardContent>
+      </Card>
 
-      {/* Holdings Table */}
+      {/* Pie Chart — full width */}
+      <Card className="border-0 shadow-sm bg-white">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base font-semibold text-slate-700">פיזור לפי ניירות ערך</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex items-center justify-center h-[300px]">
+              <Skeleton className="h-52 w-52 rounded-full" />
+            </div>
+          ) : allocations.length > 0 ? (
+            <>
+              <AllocationChart allocations={allocations} />
+              {/* Compact legend below chart */}
+              <div className="mt-4 pt-4 border-t grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-2">
+                {allocations.map((a, i) => (
+                  <div key={a.ticker} className="flex items-center gap-2 min-w-0">
+                    <div
+                      className="h-2.5 w-2.5 rounded-full shrink-0"
+                      style={{
+                        background: [
+                          "#14b8a6","#8b5cf6","#f97316","#06b6d4",
+                          "#a855f7","#f59e0b","#0ea5e9","#ec4899",
+                          "#10b981","#6366f1",
+                        ][i % 10],
+                      }}
+                    />
+                    <span className="text-xs text-slate-600 font-medium truncate">{a.ticker}</span>
+                    <span className="text-xs text-slate-400 tabular-nums mr-auto shrink-0">
+                      {a.percentage.toFixed(1)}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center justify-center h-64 text-slate-400 text-sm">
+              אין נתונים להצגה
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Holdings Table — full width */}
       <PortfolioTable
         holdings={holdings}
         onEdit={handleEdit}

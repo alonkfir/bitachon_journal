@@ -71,7 +71,7 @@ function CustomTooltip({
 
 export function AllocationChart({ allocations }: AllocationChartProps) {
   return (
-    <ResponsiveContainer width="100%" height={360}>
+    <ResponsiveContainer width="100%" height={440}>
       <PieChart>
         <Pie
           data={allocations}
@@ -79,7 +79,8 @@ export function AllocationChart({ allocations }: AllocationChartProps) {
           nameKey="ticker"
           cx="50%"
           cy="50%"
-          outerRadius={155}
+          innerRadius={70}
+          outerRadius={170}
           paddingAngle={2}
           label={SliceLabel}
           labelLine={false}
