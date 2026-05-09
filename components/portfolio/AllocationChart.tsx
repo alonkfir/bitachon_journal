@@ -40,10 +40,10 @@ function SliceLabel(props: any) {
       fill="white"
       textAnchor="middle"
       dominantBaseline="central"
-      fontSize={11}
-      fontWeight="700"
-      stroke="rgba(0,0,0,0.25)"
-      strokeWidth={0.4}
+      fontSize={13}
+      fontWeight="800"
+      stroke="rgba(0,0,0,0.55)"
+      strokeWidth={0.65}
       paintOrder="stroke"
     >
       {`${payload.ticker}: ${payload.percentage.toFixed(1)}%`}
