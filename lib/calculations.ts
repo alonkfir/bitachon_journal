@@ -1,4 +1,4 @@
-import { Trade, PartialExit, TradeMetrics, SectorAllocation, PortfolioHolding } from "./types"
+import { Trade, PartialExit, TradeMetrics, TickerAllocation, PortfolioHolding } from "./types"
 
 // ─── Core per-trade helpers ────────────────────────────────────────────────
 
@@ -129,19 +129,19 @@ export function computeMetrics(trades: Trade[]): TradeMetrics {
 
 // ─── Portfolio allocation ──────────────────────────────────────────────────
 
-/** Sector allocation breakdown for the pie chart */
-export function sectorAllocations(holdings: PortfolioHolding[]): SectorAllocation[] {
+/** Ticker allocation breakdown for the pie chart */
+export function tickerAllocations(holdings: PortfolioHolding[]): TickerAllocation[] {
   const total = holdings.reduce((sum, h) => sum + h.amount, 0)
   if (total === 0) return []
 
-  const bySector: Record<string, number> = {}
+  const byTicker: Record<string, number> = {}
   for (const h of holdings) {
-    bySector[h.sector] = (bySector[h.sector] ?? 0) + h.amount
+    byTicker[h.ticker] = (byTicker[h.ticker] ?? 0) + h.amount
   }
 
-  return Object.entries(bySector)
-    .map(([sector, amount]) => ({
-      sector,
+  return Object.entries(byTicker)
+    .map(([ticker, amount]) => ({
+      ticker,
       amount,
       percentage: (amount / total) * 100,
     }))

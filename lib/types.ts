@@ -64,8 +64,8 @@ export interface PortfolioInsert
   extends Omit<PortfolioHolding, "id" | "user_id" | "created_at" | "updated_at"> {}
 export interface PortfolioUpdate extends Partial<PortfolioInsert> {}
 
-export interface SectorAllocation {
-  sector: string
+export interface TickerAllocation {
+  ticker: string
   amount: number
   percentage: number
 }

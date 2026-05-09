@@ -6,7 +6,6 @@ import { Pencil, Trash2, MoreHorizontal, BarChart3 } from "lucide-react"
 import { PortfolioHolding } from "@/lib/types"
 import { formatUSD, formatPercent } from "@/lib/calculations"
 import { createClient } from "@/lib/supabase/client"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Table,
@@ -26,18 +25,6 @@ import {
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog"
 import { EmptyState } from "@/components/shared/EmptyState"
 
-const SECTOR_COLORS: Record<string, string> = {
-  טכנולוגיה: "bg-indigo-100 text-indigo-700",
-  פיננסים: "bg-blue-100 text-blue-700",
-  בריאות: "bg-emerald-100 text-emerald-700",
-  אנרגיה: "bg-amber-100 text-amber-700",
-  נדלן: "bg-orange-100 text-orange-700",
-  תעשייה: "bg-slate-100 text-slate-700",
-}
-
-function sectorColor(sector: string) {
-  return SECTOR_COLORS[sector] ?? "bg-violet-100 text-violet-700"
-}
 
 interface PortfolioTableProps {
   holdings: PortfolioHolding[]
@@ -82,7 +69,6 @@ export function PortfolioTable({ holdings, onEdit, onRefresh }: PortfolioTablePr
           <TableHeader>
             <TableRow className="bg-slate-50 hover:bg-slate-50">
               <TableHead className="text-slate-600 font-semibold">טיקר</TableHead>
-              <TableHead className="text-slate-600 font-semibold">מגזר</TableHead>
               <TableHead className="text-slate-600 font-semibold text-left">שווי</TableHead>
               <TableHead className="text-slate-600 font-semibold text-left">% מהתיק</TableHead>
               <TableHead className="text-slate-600 font-semibold text-left">מחיר ממוצע</TableHead>
@@ -95,11 +81,6 @@ export function PortfolioTable({ holdings, onEdit, onRefresh }: PortfolioTablePr
               <TableRow key={h.id} className="hover:bg-slate-50/50">
                 <TableCell className="font-bold text-slate-900 tracking-wide">
                   {h.ticker.toUpperCase()}
-                </TableCell>
-                <TableCell>
-                  <Badge className={`border-0 text-xs ${sectorColor(h.sector)}`}>
-                    {h.sector}
-                  </Badge>
                 </TableCell>
                 <TableCell className="text-left tabular-nums font-medium">
                   {formatUSD(h.amount)}

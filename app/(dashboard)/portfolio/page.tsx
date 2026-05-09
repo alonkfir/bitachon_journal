@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { Plus } from "lucide-react"
 import { PortfolioHolding } from "@/lib/types"
-import { sectorAllocations, formatUSD } from "@/lib/calculations"
+import { tickerAllocations, formatUSD } from "@/lib/calculations"
 import { createClient } from "@/lib/supabase/client"
 import { AllocationChart } from "@/components/portfolio/AllocationChart"
 import { PortfolioTable } from "@/components/portfolio/PortfolioTable"
@@ -43,7 +43,7 @@ export default function PortfolioPage() {
     fetchHoldings()
   }
 
-  const allocations = sectorAllocations(holdings)
+  const allocations = tickerAllocations(holdings)
   const totalValue = holdings.reduce((s, h) => s + h.amount, 0)
 
   return (
@@ -51,7 +51,7 @@ export default function PortfolioPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">תיק השקעות</h1>
-          <p className="text-slate-500 text-sm mt-1">פיזור ארוך-טווח לפי מגזרים</p>
+          <p className="text-slate-500 text-sm mt-1">פיזור ארוך-טווח לפי ניירות ערך</p>
         </div>
         <Button onClick={() => setFormOpen(true)}>
           <Plus className="h-4 w-4 ml-1" />
@@ -63,7 +63,7 @@ export default function PortfolioPage() {
         {/* Pie Chart */}
         <Card className="border-0 shadow-sm bg-white">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold text-slate-700">פיזור לפי מגזרים</CardTitle>
+            <CardTitle className="text-base font-semibold text-slate-700">פיזור לפי ניירות ערך</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -102,22 +102,23 @@ export default function PortfolioPage() {
           {!loading && allocations.length > 0 && (
             <Card className="border-0 shadow-sm bg-white">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-semibold text-slate-700">פירוט מגזרים</CardTitle>
+                <CardTitle className="text-sm font-semibold text-slate-700">פירוט לפי נייר ערך</CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
                 <div className="space-y-2">
                   {allocations.map((a, i) => (
-                    <div key={a.sector} className="flex items-center gap-3">
+                    <div key={a.ticker} className="flex items-center gap-3">
                       <div
                         className="h-3 w-3 rounded-full shrink-0"
                         style={{
                           background: [
-                            "#6366f1","#10b981","#f59e0b","#3b82f6",
-                            "#8b5cf6","#06b6d4","#ec4899","#84cc16",
-                          ][i % 8],
+                            "#14b8a6","#8b5cf6","#f97316","#06b6d4",
+                            "#a855f7","#f59e0b","#0ea5e9","#ec4899",
+                            "#10b981","#6366f1",
+                          ][i % 10],
                         }}
                       />
-                      <span className="text-sm text-slate-600 flex-1">{a.sector}</span>
+                      <span className="text-sm text-slate-600 flex-1">{a.ticker}</span>
                       <span className="text-sm font-medium text-slate-700 tabular-nums">
                         {a.percentage.toFixed(1)}%
                       </span>

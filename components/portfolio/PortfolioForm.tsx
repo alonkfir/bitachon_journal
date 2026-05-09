@@ -16,24 +16,10 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 
-const SECTORS = [
-  "טכנולוגיה",
-  "פיננסים",
-  "בריאות",
-  "אנרגיה",
-  "נדלן",
-  "תעשייה",
-  "צריכה",
-  "תשתיות",
-  "חומרים",
-  "תקשורת",
-  "אחר",
-]
-
 const EMPTY: PortfolioInsert = {
   ticker: "",
   amount: 0,
-  sector: "טכנולוגיה",
+  sector: "אחר",
   purchase_date: null,
   avg_cost: null,
   shares: null,
@@ -119,29 +105,15 @@ export function PortfolioForm({ open, holding, onClose }: PortfolioFormProps) {
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>טיקר</Label>
-              <Input
-                placeholder="MSFT"
-                value={form.ticker}
-                onChange={(e) => set("ticker", e.target.value)}
-                dir="ltr"
-                className="uppercase"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>מגזר</Label>
-              <select
-                value={form.sector}
-                onChange={(e) => set("sector", e.target.value)}
-                className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {SECTORS.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </div>
+          <div className="space-y-2">
+            <Label>טיקר</Label>
+            <Input
+              placeholder="MSFT"
+              value={form.ticker}
+              onChange={(e) => set("ticker", e.target.value)}
+              dir="ltr"
+              className="uppercase"
+            />
           </div>
 
           <div className="space-y-2">
