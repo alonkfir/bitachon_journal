@@ -84,6 +84,19 @@ export function PortfolioForm({ open, holding, onClose }: PortfolioFormProps) {
       ;({ error } = await supabase.from("portfolio").update(base).eq("id", holding.id))
     } else {
       ;({ error } = await supabase.from("portfolio").insert({ ...base, user_id: user.id }))
+
+      // Mirror into purchase history when price + qty are available
+      if (!error && base.avg_cost && base.shares && base.shares > 0) {
+        await supabase.from("portfolio_purchases").insert({
+          user_id: user.id,
+          ticker: base.ticker,
+          price: base.avg_cost,
+          quantity: base.shares,
+          purchase_date: base.purchase_date ?? new Date().toISOString().split("T")[0],
+          notes: base.notes ?? null,
+        })
+        // purchase record failure is non-critical — don't surface it
+      }
     }
 
     if (error) toast.error("שגיאה: " + error.message)

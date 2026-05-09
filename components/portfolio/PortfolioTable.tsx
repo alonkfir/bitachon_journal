@@ -3,8 +3,8 @@
 import { useState } from "react"
 import { toast } from "sonner"
 import { Pencil, Trash2, MoreHorizontal, BarChart3 } from "lucide-react"
-import { PortfolioHolding } from "@/lib/types"
-import { formatUSD, formatPercent } from "@/lib/calculations"
+import { PortfolioHolding, PortfolioPurchase } from "@/lib/types"
+import { formatUSD, formatPercent, weightedAvgCost } from "@/lib/calculations"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import {
@@ -28,11 +28,12 @@ import { EmptyState } from "@/components/shared/EmptyState"
 
 interface PortfolioTableProps {
   holdings: PortfolioHolding[]
+  purchases: PortfolioPurchase[]
   onEdit: (h: PortfolioHolding) => void
   onRefresh: () => void
 }
 
-export function PortfolioTable({ holdings, onEdit, onRefresh }: PortfolioTableProps) {
+export function PortfolioTable({ holdings, purchases, onEdit, onRefresh }: PortfolioTableProps) {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [deleting, setDeleting] = useState(false)
 
@@ -89,7 +90,11 @@ export function PortfolioTable({ holdings, onEdit, onRefresh }: PortfolioTablePr
                   {total > 0 ? formatPercent((h.amount / total) * 100) : "—"}
                 </TableCell>
                 <TableCell className="text-left tabular-nums text-sm text-slate-500">
-                  {h.avg_cost ? formatUSD(h.avg_cost) : "—"}
+                  {(() => {
+                    const wac = weightedAvgCost(purchases, h.ticker)
+                    const display = wac ?? h.avg_cost
+                    return display ? formatUSD(display) : "—"
+                  })()}
                 </TableCell>
                 <TableCell className="text-left tabular-nums text-sm text-slate-500">
                   {h.shares ? h.shares.toLocaleString("he-IL") : "—"}

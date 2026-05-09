@@ -69,3 +69,17 @@ export interface TickerAllocation {
   amount: number
   percentage: number
 }
+
+export interface PortfolioPurchase {
+  id: string
+  user_id: string
+  ticker: string
+  price: number
+  quantity: number
+  purchase_date: string
+  notes: string | null
+  created_at: string
+}
+
+export interface PurchaseInsert
+  extends Omit<PortfolioPurchase, "id" | "user_id" | "created_at"> {}

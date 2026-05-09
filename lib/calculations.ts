@@ -1,4 +1,4 @@
-import { Trade, PartialExit, TradeMetrics, TickerAllocation, PortfolioHolding } from "./types"
+import { Trade, PartialExit, TradeMetrics, TickerAllocation, PortfolioHolding, PortfolioPurchase } from "./types"
 
 // ─── Core per-trade helpers ────────────────────────────────────────────────
 
@@ -146,6 +146,16 @@ export function tickerAllocations(holdings: PortfolioHolding[]): TickerAllocatio
       percentage: (amount / total) * 100,
     }))
     .sort((a, b) => b.amount - a.amount)
+}
+
+/** Weighted average cost per share from purchase records for a given ticker */
+export function weightedAvgCost(purchases: PortfolioPurchase[], ticker: string): number | null {
+  const rows = purchases.filter((p) => p.ticker === ticker)
+  if (rows.length === 0) return null
+  const totalQty = rows.reduce((s, p) => s + p.quantity, 0)
+  if (totalQty === 0) return null
+  const totalCost = rows.reduce((s, p) => s + p.price * p.quantity, 0)
+  return totalCost / totalQty
 }
 
 // ─── Formatters ────────────────────────────────────────────────────────────
