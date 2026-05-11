@@ -26,7 +26,27 @@ export default function RegisterPage() {
     setLoading(true)
     const supabase = createClient()
     const { error, data } = await supabase.auth.signUp({ email, password })
-    if (error) {
+
+    const isAlreadyRegistered =
+      error?.message?.toLowerCase().includes("already registered") ||
+      error?.message?.toLowerCase().includes("user already exists") ||
+      (!error && data.user?.identities?.length === 0)
+
+    if (isAlreadyRegistered) {
+      // User exists but hasn't confirmed — resend the activation link
+      const { error: resendError } = await supabase.auth.resend({
+        type: "signup",
+        email,
+      })
+      if (resendError) {
+        toast.error("שגיאה בשליחת הלינק: " + resendError.message)
+      } else {
+        toast.info(
+          "החשבון קיים אך טרם אומת. לינק הפעלה חדש נשלח לאימייל שלך.",
+          { duration: 6000 }
+        )
+      }
+    } else if (error) {
       toast.error("שגיאה בהרשמה: " + error.message)
     } else if (data.session) {
       router.push("/swing")
