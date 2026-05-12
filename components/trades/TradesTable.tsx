@@ -129,14 +129,14 @@ function MobileTradeCard({ trade, livePrices, onEdit, onHistory, onQuickSell, on
   const livePct   = liveDiff !== null ? (liveDiff / trade.entry_price) * 100 : null
 
   return (
-    <div className="p-4 border-t first:border-t-0">
+    <div className="p-4 border-t dark:border-slate-700/50 first:border-t-0">
 
       {/* Row 1: Logo + Symbol + direction | Status + P&L */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2.5">
           <TickerAvatar symbol={trade.symbol} logoUrl={trade.logo_url} />
           <div>
-            <div className="font-bold text-slate-900 text-base tracking-wide leading-tight">
+            <div className="font-bold text-slate-900 dark:text-slate-100 text-base tracking-wide leading-tight">
               {trade.symbol.toUpperCase()}
             </div>
             <div className="flex items-center gap-1.5 mt-0.5">
@@ -187,16 +187,16 @@ function MobileTradeCard({ trade, livePrices, onEdit, onHistory, onQuickSell, on
       </div>
 
       {/* Row 2: Data grid */}
-      <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 mb-3 bg-slate-50 rounded-lg px-3 py-2.5">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 mb-3 bg-slate-50 dark:bg-slate-800/40 rounded-lg px-3 py-2.5">
         <div>
           <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-0.5">כניסה</p>
-          <p className="text-sm font-semibold text-slate-800 tabular-nums">{formatUSD(trade.entry_price)}</p>
+          <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 tabular-nums">{formatUSD(trade.entry_price)}</p>
         </div>
         <div>
           <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wide mb-0.5">מחיר חי</p>
           {livePrice !== null ? (
             <p className="text-sm font-semibold tabular-nums">
-              <span className="text-slate-800">{formatUSD(livePrice)}</span>
+              <span className="text-slate-800 dark:text-slate-200">{formatUSD(livePrice)}</span>
               {livePct !== null && (
                 <span className={cn("text-xs mr-1", pctColor(livePct))}>
                   {livePct >= 0 ? "+" : ""}{livePct.toFixed(1)}%
@@ -345,16 +345,16 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
           const hasR     = monthTrades.some((t) => rMultiple(t) !== null)
 
           return (
-            <div key={key} className="rounded-xl border bg-white shadow-sm overflow-hidden">
+            <div key={key} className="rounded-xl border dark:border-slate-700/50 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
 
               {/* ── Accordion header — larger touch target on mobile ── */}
               <button
                 type="button"
                 onClick={() => toggleMonth(key)}
-                className="w-full flex items-center justify-between px-5 py-5 md:py-4 hover:bg-slate-50 transition-colors"
+                className="w-full flex items-center justify-between px-5 py-5 md:py-4 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
               >
                 <div className="flex items-center gap-3 flex-wrap">
-                  <span className="font-semibold text-slate-800 text-sm">
+                  <span className="font-semibold text-slate-800 dark:text-slate-200 text-sm">
                     {formatMonthHeading(key)}
                   </span>
                   <span className="text-xs text-slate-400">{monthTrades.length} עסקאות</span>
@@ -392,22 +392,22 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                 <div style={{ overflow: "hidden" }}>
 
                   {/* Desktop table */}
-                  <div className="border-t overflow-x-auto hidden md:block">
+                  <div className="border-t dark:border-slate-700/50 overflow-x-auto hidden md:block">
                     <Table>
                       <TableHeader>
-                        <TableRow className="bg-slate-50 hover:bg-slate-50">
-                          <TableHead className="text-slate-600 font-semibold text-right">סמל</TableHead>
-                          <TableHead className="text-slate-600 font-semibold text-left">מחיר חי</TableHead>
-                          <TableHead className="text-slate-600 font-semibold text-right">כיוון</TableHead>
-                          <TableHead className="text-slate-600 font-semibold text-right">תאריך</TableHead>
-                          <TableHead className="text-slate-600 font-semibold text-left">כניסה</TableHead>
-                          <TableHead className="text-slate-600 font-semibold text-left">סטופ</TableHead>
-                          <TableHead className="text-slate-600 font-semibold text-left">כמות</TableHead>
-                          <TableHead className="text-slate-600 font-semibold text-left">סיכון $</TableHead>
+                        <TableRow className="bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-right">סמל</TableHead>
+                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-left">מחיר חי</TableHead>
+                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-right">כיוון</TableHead>
+                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-right">תאריך</TableHead>
+                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-left">כניסה</TableHead>
+                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-left">סטופ</TableHead>
+                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-left">כמות</TableHead>
+                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-left">סיכון $</TableHead>
                           <TableHead className="w-[84px]" />
-                          <TableHead className="text-slate-600 font-semibold text-left">רווח/הפסד</TableHead>
-                          <TableHead className="text-slate-600 font-semibold text-left">R×</TableHead>
-                          <TableHead className="text-slate-600 font-semibold text-right">סטטוס</TableHead>
+                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-left">רווח/הפסד</TableHead>
+                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-left">R×</TableHead>
+                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-right">סטטוס</TableHead>
                           <TableHead className="w-10" />
                         </TableRow>
                       </TableHeader>
@@ -428,12 +428,12 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                           const livePct   = liveDiff !== null ? (liveDiff / trade.entry_price) * 100 : null
 
                           return (
-                            <TableRow key={trade.id} className="hover:bg-slate-50/50">
+                            <TableRow key={trade.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
 
                               <TableCell className="text-right py-3">
                                 <div className="flex items-center gap-2 justify-end">
                                   <div>
-                                    <div className="font-bold text-slate-900 tracking-wide">
+                                    <div className="font-bold text-slate-900 dark:text-slate-100 tracking-wide">
                                       {trade.symbol.toUpperCase()}
                                     </div>
                                     {hasPartials && (
@@ -449,7 +449,7 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                               <TableCell className="text-left tabular-nums text-sm">
                                 {livePrice !== null ? (
                                   <div>
-                                    <div className="font-medium text-slate-800">{formatUSD(livePrice)}</div>
+                                    <div className="font-medium text-slate-800 dark:text-slate-200">{formatUSD(livePrice)}</div>
                                     {livePct !== null && (
                                       <div className={cn("text-xs", pctColor(livePct))}>
                                         {livePct >= 0 ? "+" : ""}{livePct.toFixed(2)}%
@@ -473,11 +473,11 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                                 </span>
                               </TableCell>
 
-                              <TableCell className="text-slate-500 text-sm text-right whitespace-nowrap">
+                              <TableCell className="text-slate-500 dark:text-slate-400 text-sm text-right whitespace-nowrap">
                                 {new Date(trade.entry_date).toLocaleDateString("he-IL")}
                               </TableCell>
 
-                              <TableCell className="text-left tabular-nums text-sm text-slate-700">
+                              <TableCell className="text-left tabular-nums text-sm text-slate-700 dark:text-slate-300">
                                 {formatUSD(trade.entry_price)}
                               </TableCell>
 
@@ -485,7 +485,7 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                                 {formatUSD(trade.stop_loss)}
                               </TableCell>
 
-                              <TableCell className="text-left tabular-nums text-sm text-slate-700">
+                              <TableCell className="text-left tabular-nums text-sm text-slate-700 dark:text-slate-300">
                                 {hasPartials && remaining < trade.quantity ? (
                                   <span>
                                     <span className="font-medium">{remaining}</span>
@@ -629,7 +629,7 @@ function TableSkeleton() {
   return (
     <div className="space-y-3">
       {[0, 1, 2].map((i) => (
-        <div key={i} className="rounded-xl border bg-white shadow-sm p-4 space-y-3">
+        <div key={i} className="rounded-xl border dark:border-slate-700/50 bg-white dark:bg-slate-900 shadow-sm p-4 space-y-3">
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-10 w-full" />
           <Skeleton className="h-10 w-full" />

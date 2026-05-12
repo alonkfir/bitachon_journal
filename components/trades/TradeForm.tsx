@@ -179,7 +179,7 @@ export function TradeForm({ open, trade, originRect, onClose }: TradeFormProps) 
           >
             <div className="pointer-events-auto relative w-full max-w-2xl">
               <div
-                className="rounded-2xl bg-white border border-slate-200/80 overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[88vh]"
+                className="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/50 overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[88vh]"
                 style={{
                   boxShadow:
                     "0 24px 64px -10px rgba(0,0,0,0.13), " +
@@ -189,19 +189,19 @@ export function TradeForm({ open, trade, originRect, onClose }: TradeFormProps) 
               >
 
                 {/* ── Header ── */}
-                <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-slate-100 shrink-0">
+                <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-slate-100 dark:border-slate-700/60 shrink-0">
                   <div>
-                    <h2 className="text-lg font-bold text-slate-900">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                       {isEdit ? "עריכת עסקה" : "עסקה חדשה"}
                     </h2>
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                       {isEdit ? "עדכן את פרטי העסקה" : "הזן את פרטי עסקת הסווינג החדשה"}
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => !loading && onClose()}
-                    className="text-slate-400 hover:text-slate-700 transition-colors p-1.5 rounded-lg hover:bg-slate-100 -mt-0.5 -ml-0.5"
+                    className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 -mt-0.5 -ml-0.5"
                   >
                     <X className="h-4.5 w-4.5" />
                   </button>
@@ -212,7 +212,7 @@ export function TradeForm({ open, trade, originRect, onClose }: TradeFormProps) 
 
                   {/* Long / Short */}
                   <div className="space-y-2">
-                    <Label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <Label className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                       כיוון עסקה
                     </Label>
                     <div className="grid grid-cols-2 gap-2">
@@ -222,8 +222,8 @@ export function TradeForm({ open, trade, originRect, onClose }: TradeFormProps) 
                         className={cn(
                           "flex items-center justify-center gap-2 rounded-xl border py-3 text-sm font-semibold transition-all",
                           form.side === "long"
-                            ? "bg-emerald-50 border-emerald-400/70 text-emerald-700"
-                            : "border-slate-200 text-slate-400 hover:border-slate-300 hover:text-slate-600"
+                            ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-400/70 text-emerald-700 dark:text-emerald-400"
+                            : "border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-600 dark:hover:text-slate-400"
                         )}
                       >
                         <TrendingUp className="h-4 w-4" />
@@ -235,8 +235,8 @@ export function TradeForm({ open, trade, originRect, onClose }: TradeFormProps) 
                         className={cn(
                           "flex items-center justify-center gap-2 rounded-xl border py-3 text-sm font-semibold transition-all",
                           form.side === "short"
-                            ? "bg-rose-50 border-rose-400/70 text-rose-700"
-                            : "border-slate-200 text-slate-400 hover:border-slate-300 hover:text-slate-600"
+                            ? "bg-rose-50 dark:bg-rose-950/40 border-rose-400/70 text-rose-700 dark:text-rose-400"
+                            : "border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-600 dark:hover:text-slate-400"
                         )}
                       >
                         <TrendingDown className="h-4 w-4" />
@@ -248,14 +248,14 @@ export function TradeForm({ open, trade, originRect, onClose }: TradeFormProps) 
                   {/* Symbol + Date */}
                   <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-start">
                     <div className="space-y-2">
-                      <Label className="text-slate-700">סמל נייר ערך</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">סמל נייר ערך</Label>
                       <StockSearchInput value={form.symbol} onSelect={handleStockSelect} />
                       <p className="text-xs text-slate-400">
                         הקלד לחיפוש · Enter לסמלים כמו METU, ETF וכו׳
                       </p>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-slate-700">תאריך כניסה</Label>
+                      <Label className="text-slate-700 dark:text-slate-300">תאריך כניסה</Label>
                       <Input
                         type="date"
                         value={form.entry_date}
@@ -268,10 +268,10 @@ export function TradeForm({ open, trade, originRect, onClose }: TradeFormProps) 
 
                   {/* Entry | Stop Loss | Target */}
                   <div className="space-y-1.5">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">מחירים</p>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">מחירים</p>
                     <div className="grid grid-cols-3 gap-3">
                       <div className="space-y-2">
-                        <Label className="text-xs text-slate-700">מחיר כניסה</Label>
+                        <Label className="text-xs text-slate-700 dark:text-slate-300">מחיר כניסה</Label>
                         <Input
                           type="number" step="0.01" min="0" placeholder="0.00" dir="ltr"
                           value={form.entry_price || ""}
@@ -321,20 +321,20 @@ export function TradeForm({ open, trade, originRect, onClose }: TradeFormProps) 
 
                   {/* Live calculations */}
                   {(risk > 0 || rrr !== null) && (
-                    <div className="rounded-xl bg-amber-50/70 border border-amber-200/60 px-4 py-3.5 space-y-2.5">
-                      <p className="text-xs font-bold uppercase tracking-wide text-amber-700/80">
+                    <div className="rounded-xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-700/30 px-4 py-3.5 space-y-2.5">
+                      <p className="text-xs font-bold uppercase tracking-wide text-amber-700/80 dark:text-amber-400/80">
                         חישוב בזמן אמת
                       </p>
                       {risk > 0 && (
                         <div className="flex justify-between text-sm">
-                          <span className="text-slate-500">סיכון (R)</span>
-                          <span className="font-semibold text-amber-700">{formatUSD(risk)}</span>
+                          <span className="text-slate-500 dark:text-slate-400">סיכון (R)</span>
+                          <span className="font-semibold text-amber-700 dark:text-amber-400">{formatUSD(risk)}</span>
                         </div>
                       )}
                       {rrr !== null && (
                         <div className="flex justify-between text-sm">
-                          <span className="text-slate-500">יחס סיכון/תגמול</span>
-                          <span className={`font-semibold ${rrr >= 2 ? "text-emerald-600" : "text-amber-700"}`}>
+                          <span className="text-slate-500 dark:text-slate-400">יחס סיכון/תגמול</span>
+                          <span className={`font-semibold ${rrr >= 2 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-700 dark:text-amber-400"}`}>
                             {rrr.toFixed(2)}{rrr < 2 && " ⚠ מתחת ל-2:1"}
                           </span>
                         </div>
@@ -346,21 +346,21 @@ export function TradeForm({ open, trade, originRect, onClose }: TradeFormProps) 
 
                   {/* Exit price */}
                   <div className="space-y-2">
-                    <Label className="text-slate-700">מחיר יציאה (לסגירת עסקה)</Label>
+                    <Label className="text-slate-700 dark:text-slate-300">מחיר יציאה (לסגירת עסקה)</Label>
                     <Input
                       type="number" step="0.01" min="0"
                       placeholder="השאר ריק לעסקה פעילה" dir="ltr"
                       value={form.exit_price ?? ""}
                       onChange={(e) => set("exit_price", e.target.value ? num(e.target.value) : null)}
                     />
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-400 dark:text-slate-500">
                       הזנת מחיר יציאה תסמן את העסקה כ&quot;סגורה&quot; אוטומטית
                     </p>
                   </div>
 
                   {/* Notes */}
                   <div className="space-y-2">
-                    <Label className="text-slate-700">הערות (אופציונלי)</Label>
+                    <Label className="text-slate-700 dark:text-slate-300">הערות (אופציונלי)</Label>
                     <Textarea
                       placeholder="ניתוח, סיבה לכניסה, לקחים..."
                       value={form.notes ?? ""}

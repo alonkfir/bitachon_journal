@@ -4,6 +4,7 @@ import "./globals.css"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration"
+import { ThemeProvider } from "@/components/providers/ThemeProvider"
 
 const googleSans = localFont({
   src: [
@@ -47,13 +48,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="he" dir="rtl" className={googleSans.variable}>
+    <html lang="he" dir="rtl" className={googleSans.variable} suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
-        <ServiceWorkerRegistration />
-        <TooltipProvider>
-          {children}
-          <Toaster richColors position="bottom-left" />
-        </TooltipProvider>
+        <ThemeProvider>
+          <ServiceWorkerRegistration />
+          <TooltipProvider>
+            {children}
+            <Toaster richColors position="bottom-left" />
+          </TooltipProvider>
+        </ThemeProvider>
       </body>
     </html>
   )
