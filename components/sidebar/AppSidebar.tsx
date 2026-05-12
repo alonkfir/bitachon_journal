@@ -55,11 +55,11 @@ export function AppSidebar() {
             </svg>
           </div>
           <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <p className="font-bold text-slate-900 dark:text-slate-100 text-[15px] leading-tight truncate">
-              יומן הביטחון
+            <p className="font-bold text-[15px] leading-tight truncate text-[#9a6f00] dark:text-[#ffe26f]">
+              ביטחון בשוק ההון
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-500 leading-tight mt-0.5">
-              מסחר חכם
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-tight mt-0.5">
+              סווינג מומנטום
             </p>
           </div>
         </div>
