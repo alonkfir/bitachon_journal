@@ -396,18 +396,18 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                     <Table>
                       <TableHeader>
                         <TableRow className="bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-right">סמל</TableHead>
-                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-left">מחיר חי</TableHead>
-                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-right">כיוון</TableHead>
-                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-right">תאריך</TableHead>
-                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-left">כניסה</TableHead>
-                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-left">סטופ</TableHead>
-                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-left">כמות</TableHead>
-                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-left">סיכון $</TableHead>
+                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-center w-[110px]">סמל</TableHead>
+                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-right">מחיר חי</TableHead>
+                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-right w-[72px]">כיוון</TableHead>
+                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-right w-[90px]">תאריך</TableHead>
+                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-right">כניסה</TableHead>
+                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-right">סטופ</TableHead>
+                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-right w-[90px]">כמות</TableHead>
+                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-right">סיכון $</TableHead>
                           <TableHead className="w-[84px]" />
-                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-left">רווח/הפסד</TableHead>
-                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-left">R×</TableHead>
-                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-right">סטטוס</TableHead>
+                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-right">רווח/הפסד</TableHead>
+                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-right w-[60px]">R×</TableHead>
+                          <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-right w-[72px]">סטטוס</TableHead>
                           <TableHead className="w-10" />
                         </TableRow>
                       </TableHeader>
@@ -430,8 +430,9 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                           return (
                             <TableRow key={trade.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
 
-                              <TableCell className="text-right py-3">
-                                <div className="flex items-center gap-2 justify-end">
+                              <TableCell className="text-center py-3">
+                                <div className="flex items-center gap-2 justify-center">
+                                  <TickerAvatar symbol={trade.symbol} logoUrl={trade.logo_url} />
                                   <div>
                                     <div className="font-bold text-slate-900 dark:text-slate-100 tracking-wide">
                                       {trade.symbol.toUpperCase()}
@@ -442,11 +443,10 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                                       </div>
                                     )}
                                   </div>
-                                  <TickerAvatar symbol={trade.symbol} logoUrl={trade.logo_url} />
                                 </div>
                               </TableCell>
 
-                              <TableCell className="text-left tabular-nums text-sm">
+                              <TableCell className="text-right tabular-nums text-sm">
                                 {livePrice !== null ? (
                                   <div>
                                     <div className="font-medium text-slate-800 dark:text-slate-200">{formatUSD(livePrice)}</div>
@@ -477,15 +477,15 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                                 {new Date(trade.entry_date).toLocaleDateString("he-IL")}
                               </TableCell>
 
-                              <TableCell className="text-left tabular-nums text-sm text-slate-700 dark:text-slate-300">
+                              <TableCell className="text-right tabular-nums text-sm text-slate-700 dark:text-slate-300">
                                 {formatUSD(trade.entry_price)}
                               </TableCell>
 
-                              <TableCell className="text-left tabular-nums text-sm text-rose-500">
+                              <TableCell className="text-right tabular-nums text-sm text-rose-500">
                                 {formatUSD(trade.stop_loss)}
                               </TableCell>
 
-                              <TableCell className="text-left tabular-nums text-sm text-slate-700 dark:text-slate-300">
+                              <TableCell className="text-right tabular-nums text-sm text-slate-700 dark:text-slate-300">
                                 {hasPartials && remaining < trade.quantity ? (
                                   <span>
                                     <span className="font-medium">{remaining}</span>
@@ -495,7 +495,7 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                                 ) : trade.quantity}
                               </TableCell>
 
-                              <TableCell className="text-left tabular-nums text-sm text-amber-600 font-medium">
+                              <TableCell className="text-right tabular-nums text-sm text-amber-600 font-medium">
                                 {formatUSD(risk)}
                               </TableCell>
 
@@ -512,7 +512,7 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                                 )}
                               </TableCell>
 
-                              <TableCell className="text-left tabular-nums text-sm font-semibold">
+                              <TableCell className="text-right tabular-nums text-sm font-semibold">
                                 {pnl !== null ? (
                                   <span className={cn(
                                     pnl > 0 ? "text-emerald-600" : pnl < 0 ? "text-rose-600" : "text-slate-500"
@@ -522,7 +522,7 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                                 ) : <span className="text-slate-300">—</span>}
                               </TableCell>
 
-                              <TableCell className="text-left tabular-nums text-sm font-semibold">
+                              <TableCell className="text-right tabular-nums text-sm font-semibold">
                                 {rm !== null ? (
                                   <span className={rm >= 0 ? "text-emerald-600" : "text-rose-600"}>
                                     {formatR(rm)}

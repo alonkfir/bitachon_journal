@@ -17,6 +17,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <header className="flex h-14 items-center gap-2 border-b bg-white/80 dark:bg-slate-900/80 dark:border-slate-800 backdrop-blur-md px-4 sticky top-0 z-10">
           <SidebarTrigger className="-mr-1" />
           <Separator orientation="vertical" className="h-5" />
+          <div className="flex-1 min-w-0 pr-1">
+            <p className="text-[15px] font-bold text-slate-900 dark:text-[#ffe26f] leading-tight truncate">
+              ביטחון בשוק ההון
+            </p>
+            <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 leading-tight tracking-wide">
+              סווינג מומנטום
+            </p>
+          </div>
         </header>
         <main className="p-6 bg-slate-50 dark:bg-slate-950 min-h-[calc(100vh-3.5rem)]">
           {children}
