@@ -175,7 +175,7 @@ export function TradeForm({ open, trade, originRect, onClose }: TradeFormProps) 
             initial={{ scale: 0.04, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.04, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 360, damping: 28 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
             <div className="pointer-events-auto relative w-full max-w-2xl">
               <div
@@ -375,7 +375,7 @@ export function TradeForm({ open, trade, originRect, onClose }: TradeFormProps) 
                       type="submit"
                       disabled={loading}
                       className="flex-1 border-0 font-bold shadow-sm"
-                      style={{ backgroundColor: "#deff9a", color: "#1e293b" }}
+                      style={{ backgroundColor: "#ffe26f", color: "#1e293b" }}
                     >
                       {loading ? "שומר..." : isEdit ? "שמור שינויים" : "הוסף עסקה"}
                     </Button>

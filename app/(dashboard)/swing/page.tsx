@@ -66,7 +66,7 @@ export default function SwingPage() {
             setFormOpen(true)
           }}
           className="shrink-0 hidden md:flex border-0 font-semibold shadow-sm"
-          style={{ backgroundColor: "#deff9a", color: "#1e293b" }}
+          style={{ backgroundColor: "#ffe26f", color: "#1e293b" }}
         >
           <Plus className="h-4 w-4 ml-1" />
           עסקה חדשה
@@ -101,7 +101,7 @@ export default function SwingPage() {
           setFormOpen(true)
         }}
         className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 md:hidden flex items-center gap-2 px-6 py-3.5 rounded-full shadow-lg active:scale-95 transition-all text-sm font-semibold"
-        style={{ backgroundColor: "#deff9a", color: "#1e293b" }}
+        style={{ backgroundColor: "#ffe26f", color: "#1e293b" }}
         aria-label="עסקה חדשה"
       >
         <Plus className="h-5 w-5" />

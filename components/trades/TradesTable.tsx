@@ -611,7 +611,7 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
         })}
       </div>
 
-      <ExitHistoryDialog trade={historyTrade} onClose={() => setHistoryTrade(null)} />
+      <ExitHistoryDialog trade={historyTrade} onClose={() => setHistoryTrade(null)} onRefresh={onRefresh} />
       <QuickSellDialog trade={quickSellTrade} onClose={() => setQuickSellTrade(null)} onRefresh={onRefresh} />
       <ConfirmDialog
         open={!!deleteId}
