@@ -28,11 +28,11 @@ function formatDate(dateStr: string): string {
 
 export function PurchaseHistoryPanel({ purchases, loading }: PurchaseHistoryPanelProps) {
   return (
-    <div className="rounded-xl border bg-white shadow-sm overflow-hidden flex flex-col sticky top-6">
-      <div className="px-4 py-3 border-b bg-slate-50 flex items-center justify-between shrink-0">
-        <h2 className="text-sm font-semibold text-slate-700">היסטוריית קניות</h2>
+    <div className="rounded-xl border dark:border-slate-700/50 bg-white dark:bg-slate-900 shadow-sm overflow-hidden flex flex-col sticky top-6">
+      <div className="px-4 py-3 border-b dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/40 flex items-center justify-between shrink-0">
+        <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">היסטוריית קניות</h2>
         {!loading && (
-          <span className="text-xs text-slate-400">{purchases.length} עסקאות</span>
+          <span className="text-xs text-slate-400 dark:text-slate-500">{purchases.length} עסקאות</span>
         )}
       </div>
 
@@ -44,11 +44,11 @@ export function PurchaseHistoryPanel({ purchases, loading }: PurchaseHistoryPane
         </div>
       ) : purchases.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-3 py-14 px-6 text-center">
-          <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center">
-            <ShoppingCart className="h-5 w-5 text-slate-400" />
+          <div className="h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+            <ShoppingCart className="h-5 w-5 text-slate-400 dark:text-slate-500" />
           </div>
-          <p className="text-sm font-medium text-slate-600">אין היסטוריית קניות</p>
-          <p className="text-xs text-slate-400">
+          <p className="text-sm font-medium text-slate-600 dark:text-slate-400">אין היסטוריית קניות</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500">
             הוסף נייר ערך עם מחיר וכמות כדי לרשום קנייה
           </p>
         </div>
@@ -56,26 +56,26 @@ export function PurchaseHistoryPanel({ purchases, loading }: PurchaseHistoryPane
         <div className="overflow-y-auto max-h-[70vh]">
           <Table>
             <TableHeader>
-              <TableRow className="bg-slate-50 hover:bg-slate-50">
-                <TableHead className="text-slate-600 font-semibold text-xs py-2.5">תאריך</TableHead>
-                <TableHead className="text-slate-600 font-semibold text-xs py-2.5">טיקר</TableHead>
-                <TableHead className="text-slate-600 font-semibold text-xs py-2.5 text-left">מחיר</TableHead>
-                <TableHead className="text-slate-600 font-semibold text-xs py-2.5 text-left">כמות</TableHead>
+              <TableRow className="bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-xs py-2.5">תאריך</TableHead>
+                <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-xs py-2.5">טיקר</TableHead>
+                <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-xs py-2.5 text-left">מחיר</TableHead>
+                <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-xs py-2.5 text-left">כמות</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {purchases.map((p) => (
-                <TableRow key={p.id} className="hover:bg-slate-50/60">
-                  <TableCell className="text-xs text-slate-500 tabular-nums py-2.5">
+                <TableRow key={p.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30">
+                  <TableCell className="text-xs text-slate-500 dark:text-slate-400 tabular-nums py-2.5">
                     {formatDate(p.purchase_date)}
                   </TableCell>
-                  <TableCell className="text-xs font-bold text-slate-900 tracking-wide py-2.5">
+                  <TableCell className="text-xs font-bold text-slate-900 dark:text-slate-100 tracking-wide py-2.5">
                     {p.ticker}
                   </TableCell>
-                  <TableCell className="text-xs font-medium tabular-nums py-2.5 text-left">
+                  <TableCell className="text-xs font-medium text-slate-800 dark:text-slate-200 tabular-nums py-2.5 text-left">
                     {formatUSD(p.price)}
                   </TableCell>
-                  <TableCell className="text-xs text-slate-500 tabular-nums py-2.5 text-left">
+                  <TableCell className="text-xs text-slate-500 dark:text-slate-400 tabular-nums py-2.5 text-left">
                     {p.quantity.toLocaleString("he-IL")}
                   </TableCell>
                 </TableRow>

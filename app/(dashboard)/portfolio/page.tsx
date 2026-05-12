@@ -25,6 +25,7 @@ export default function PortfolioPage() {
   const [loading, setLoading] = useState(true)
   const [formOpen, setFormOpen] = useState(false)
   const [editHolding, setEditHolding] = useState<PortfolioHolding | null>(null)
+  const [btnRect, setBtnRect] = useState<DOMRect | null>(null)
 
   async function fetchAll() {
     setLoading(true)
@@ -46,6 +47,7 @@ export default function PortfolioPage() {
 
   function handleEdit(h: PortfolioHolding) {
     setEditHolding(h)
+    setBtnRect(null)
     setFormOpen(true)
   }
 
@@ -66,7 +68,14 @@ export default function PortfolioPage() {
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">תיק השקעות</h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">פיזור ארוך-טווח לפי ניירות ערך</p>
         </div>
-        <Button onClick={() => setFormOpen(true)}>
+        <Button
+          onClick={(e) => {
+            setBtnRect((e.currentTarget as HTMLElement).getBoundingClientRect())
+            setFormOpen(true)
+          }}
+          className="shrink-0 border-0 font-semibold shadow-sm"
+          style={{ backgroundColor: "#ffe26f", color: "#1e293b" }}
+        >
           <Plus className="h-4 w-4 ml-1" />
           הוסף נייר ערך
         </Button>
@@ -148,6 +157,7 @@ export default function PortfolioPage() {
       <PortfolioForm
         open={formOpen}
         holding={editHolding}
+        originRect={btnRect}
         onClose={handleFormClose}
       />
     </div>

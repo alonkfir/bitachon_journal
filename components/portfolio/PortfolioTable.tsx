@@ -65,38 +65,38 @@ export function PortfolioTable({ holdings, purchases, onEdit, onRefresh }: Portf
 
   return (
     <>
-      <div className="rounded-xl border bg-white shadow-sm overflow-hidden">
+      <div className="rounded-xl border dark:border-slate-700/50 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-slate-50 hover:bg-slate-50">
-              <TableHead className="text-slate-600 font-semibold">טיקר</TableHead>
-              <TableHead className="text-slate-600 font-semibold text-left">שווי</TableHead>
-              <TableHead className="text-slate-600 font-semibold text-left">% מהתיק</TableHead>
-              <TableHead className="text-slate-600 font-semibold text-left">מחיר ממוצע</TableHead>
-              <TableHead className="text-slate-600 font-semibold text-left">כמות מניות</TableHead>
+            <TableRow className="bg-slate-50 dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/40">
+              <TableHead className="text-slate-600 dark:text-slate-400 font-semibold">טיקר</TableHead>
+              <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-left">שווי</TableHead>
+              <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-left">% מהתיק</TableHead>
+              <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-left">מחיר ממוצע</TableHead>
+              <TableHead className="text-slate-600 dark:text-slate-400 font-semibold text-left">כמות מניות</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
           <TableBody>
             {holdings.map((h) => (
-              <TableRow key={h.id} className="hover:bg-slate-50/50">
-                <TableCell className="font-bold text-slate-900 tracking-wide">
+              <TableRow key={h.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                <TableCell className="font-bold text-slate-900 dark:text-slate-100 tracking-wide">
                   {h.ticker.toUpperCase()}
                 </TableCell>
-                <TableCell className="text-left tabular-nums font-medium">
+                <TableCell className="text-left tabular-nums font-medium text-slate-800 dark:text-slate-200">
                   {formatUSD(h.amount)}
                 </TableCell>
-                <TableCell className="text-left tabular-nums text-slate-500">
+                <TableCell className="text-left tabular-nums text-slate-500 dark:text-slate-400">
                   {total > 0 ? formatPercent((h.amount / total) * 100) : "—"}
                 </TableCell>
-                <TableCell className="text-left tabular-nums text-sm text-slate-500">
+                <TableCell className="text-left tabular-nums text-sm text-slate-500 dark:text-slate-400">
                   {(() => {
                     const wac = weightedAvgCost(purchases, h.ticker)
                     const display = wac ?? h.avg_cost
                     return display ? formatUSD(display) : "—"
                   })()}
                 </TableCell>
-                <TableCell className="text-left tabular-nums text-sm text-slate-500">
+                <TableCell className="text-left tabular-nums text-sm text-slate-500 dark:text-slate-400">
                   {h.shares ? h.shares.toLocaleString("he-IL") : "—"}
                 </TableCell>
                 <TableCell>
@@ -124,11 +124,11 @@ export function PortfolioTable({ holdings, purchases, onEdit, onRefresh }: Portf
             ))}
           </TableBody>
         </Table>
-        <div className="px-4 py-3 border-t bg-slate-50 flex justify-between items-center">
-          <span className="text-sm text-slate-500">
+        <div className="px-4 py-3 border-t dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/40 flex justify-between items-center">
+          <span className="text-sm text-slate-500 dark:text-slate-400">
             {holdings.length} ניירות ערך
           </span>
-          <span className="font-bold text-slate-800">{formatUSD(total)} סה"כ</span>
+          <span className="font-bold text-slate-800 dark:text-slate-200">{formatUSD(total)} סה&quot;כ</span>
         </div>
       </div>
 

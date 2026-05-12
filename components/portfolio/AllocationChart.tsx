@@ -61,10 +61,10 @@ function CustomTooltip({
   if (!active || !payload?.length) return null
   const d = payload[0].payload
   return (
-    <div className="rounded-lg border bg-white px-4 py-3 shadow-lg text-sm">
-      <p className="font-semibold text-slate-800 mb-1">{d.ticker}</p>
-      <p className="text-slate-500">{formatUSD(d.amount)}</p>
-      <p className="text-slate-400">{d.percentage.toFixed(1)}% מהתיק</p>
+    <div className="rounded-lg border dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 shadow-lg text-sm">
+      <p className="font-semibold text-slate-800 dark:text-slate-100 mb-1">{d.ticker}</p>
+      <p className="text-slate-500 dark:text-slate-400">{formatUSD(d.amount)}</p>
+      <p className="text-slate-400 dark:text-slate-500">{d.percentage.toFixed(1)}% מהתיק</p>
     </div>
   )
 }
