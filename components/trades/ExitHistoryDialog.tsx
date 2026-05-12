@@ -13,8 +13,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { History, Undo2, Check, X } from "lucide-react"
+import { History, RotateCcw, Check, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface ExitHistoryDialogProps {
@@ -24,7 +23,6 @@ interface ExitHistoryDialogProps {
 }
 
 export function ExitHistoryDialog({ trade, onClose, onRefresh }: ExitHistoryDialogProps) {
-  // Mirror partial_exits locally so the dialog reflects undo changes immediately
   const [exits, setExits] = useState<PartialExit[]>([])
   const [confirmIndex, setConfirmIndex] = useState<number | null>(null)
   const [undoing, setUndoing] = useState(false)
@@ -69,7 +67,9 @@ export function ExitHistoryDialog({ trade, onClose, onRefresh }: ExitHistoryDial
 
   return (
     <Dialog open={!!trade} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-md">
+
+        {/* ── Header ── */}
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <History className="h-4 w-4 text-slate-500" />
@@ -94,111 +94,141 @@ export function ExitHistoryDialog({ trade, onClose, onRefresh }: ExitHistoryDial
             </p>
           </div>
         ) : (
-          <div className="space-y-3">
-            <div className="rounded-lg border overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-slate-50 border-b">
-                    <th className="text-right text-xs font-semibold text-slate-500 px-3 py-2">תאריך</th>
-                    <th className="text-left text-xs font-semibold text-slate-500 px-3 py-2">כמות</th>
-                    <th className="text-left text-xs font-semibold text-slate-500 px-3 py-2">מחיר</th>
-                    <th className="text-left text-xs font-semibold text-slate-500 px-3 py-2">עמלות</th>
-                    <th className="text-left text-xs font-semibold text-slate-500 px-3 py-2">רווח</th>
-                    <th className="w-8" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {exits.map((exit, i) => {
-                    const pnl = (exit.price - trade.entry_price) * exit.quantity - exit.fees
-                    const isConfirming = confirmIndex === i
+          <div className="space-y-4">
 
-                    return (
-                      <tr
-                        key={i}
-                        className={cn(
-                          "border-b last:border-0 transition-colors",
-                          isConfirming
-                            ? "bg-rose-50"
-                            : i % 2 === 0 ? "bg-white" : "bg-slate-50/50"
-                        )}
-                      >
-                        {isConfirming ? (
-                          // Inline confirmation row
-                          <td colSpan={5} className="px-3 py-2.5">
-                            <div className="flex items-center gap-2 text-sm text-slate-700">
-                              <span className="font-medium text-rose-600">לבטל יציאה זו?</span>
-                              <span className="text-slate-400 text-xs">הפעולה תשחזר את הכמות לעסקה</span>
-                            </div>
-                          </td>
-                        ) : (
-                          <>
-                            <td className="text-right text-slate-600 px-3 py-2.5 tabular-nums whitespace-nowrap">
-                              {new Date(exit.date).toLocaleDateString("he-IL")}
-                            </td>
-                            <td className="text-left tabular-nums px-3 py-2.5 text-slate-700">{exit.quantity}</td>
-                            <td className="text-left tabular-nums px-3 py-2.5 text-slate-700">{formatUSD(exit.price)}</td>
-                            <td className="text-left tabular-nums px-3 py-2.5 text-slate-400 text-xs">
-                              {exit.fees > 0 ? formatUSD(exit.fees) : "—"}
-                            </td>
-                            <td className="text-left tabular-nums px-3 py-2.5 font-semibold">
-                              <span className={pnl >= 0 ? "text-emerald-600" : "text-rose-600"}>
-                                {pnl >= 0 ? "+" : ""}{formatUSD(pnl)}
-                              </span>
-                            </td>
-                          </>
-                        )}
+            {/* ── Timeline ── */}
+            <div className="relative rounded-xl bg-slate-50/80 border border-slate-100 py-2 px-2">
 
-                        {/* Undo / Confirm buttons */}
-                        <td className="px-2 py-2.5">
-                          {isConfirming ? (
-                            <div className="flex gap-1">
-                              <button
-                                type="button"
-                                disabled={undoing}
-                                onClick={() => handleUndo(i)}
-                                className="w-6 h-6 rounded flex items-center justify-center bg-rose-100 hover:bg-rose-200 text-rose-600 transition-colors disabled:opacity-50"
-                                title="אשר ביטול"
-                              >
-                                <Check className="h-3.5 w-3.5" />
-                              </button>
-                              <button
-                                type="button"
-                                disabled={undoing}
-                                onClick={() => setConfirmIndex(null)}
-                                className="w-6 h-6 rounded flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors disabled:opacity-50"
-                                title="ביטול"
-                              >
-                                <X className="h-3.5 w-3.5" />
-                              </button>
-                            </div>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => setConfirmIndex(i)}
-                              className="w-6 h-6 rounded flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-colors"
-                              title="בטל יציאה זו"
-                            >
-                              <Undo2 className="h-3.5 w-3.5" />
-                            </button>
+              {/* Vertical connecting line (right side since RTL) — only when >1 exit */}
+              {exits.length > 1 && (
+                <div
+                  className="absolute w-px bg-slate-200/80"
+                  style={{ right: "19px", top: "32px", bottom: "32px" }}
+                />
+              )}
+
+              {exits.map((exit, i) => {
+                const pnl = (exit.price - trade.entry_price) * exit.quantity - exit.fees
+                const cumulativeSold = exits.slice(0, i + 1).reduce((s, e) => s + e.quantity, 0)
+                const isFullExit = cumulativeSold >= trade.quantity
+                const isConfirming = confirmIndex === i
+
+                return (
+                  <div
+                    key={i}
+                    className={cn(
+                      "relative group flex items-center gap-3 pr-10 pl-2 py-3 rounded-xl transition-all",
+                      isConfirming
+                        ? "bg-rose-50 border border-rose-100"
+                        : "hover:bg-white hover:shadow-sm hover:border-slate-100 border border-transparent"
+                    )}
+                  >
+                    {/* Timeline dot (brand yellow) */}
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full ring-2 ring-slate-50 shrink-0"
+                      style={{ right: "13px", backgroundColor: "#ffe26f" }}
+                    />
+
+                    {isConfirming ? (
+                      /* ── Confirmation state ── */
+                      <>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-rose-700">לבטל יציאה זו?</p>
+                          <p className="text-xs text-rose-400 mt-0.5">
+                            {exit.quantity} יחידות יוחזרו לעסקה
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            type="button"
+                            disabled={undoing}
+                            onClick={() => handleUndo(i)}
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-semibold transition-colors disabled:opacity-50"
+                          >
+                            <Check className="h-3 w-3" />
+                            כן
+                          </button>
+                          <button
+                            type="button"
+                            disabled={undoing}
+                            onClick={() => setConfirmIndex(null)}
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold transition-colors"
+                          >
+                            <X className="h-3 w-3" />
+                            לא
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      /* ── Normal state: 4 columns ── */
+                      <>
+                        {/* Col 1 (rightmost in RTL): Action label + date */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-slate-800 leading-tight">
+                            {isFullExit ? "יציאה מלאה" : "יציאה חלקית"}
+                          </p>
+                          <p className="text-xs text-slate-400 mt-0.5 tabular-nums">
+                            {new Date(exit.date).toLocaleDateString("he-IL")}
+                          </p>
+                        </div>
+
+                        {/* Col 2: Qty × Price */}
+                        <div className="shrink-0 text-sm tabular-nums whitespace-nowrap text-slate-600">
+                          <span className="font-semibold text-slate-800">{exit.quantity}</span>
+                          <span className="text-slate-400 mx-1 text-xs">×</span>
+                          <span>{formatUSD(exit.price)}</span>
+                        </div>
+
+                        {/* Col 3: P/L — prominent, colored */}
+                        <div className="shrink-0 w-[80px] text-left">
+                          <span className={cn(
+                            "text-sm font-bold tabular-nums",
+                            pnl > 0 ? "text-emerald-600"
+                            : pnl < 0 ? "text-rose-600"
+                            : "text-slate-500"
+                          )}>
+                            {pnl >= 0 ? "+" : ""}{formatUSD(pnl)}
+                          </span>
+                          {exit.fees > 0 && (
+                            <p className="text-[10px] text-slate-400 mt-0.5 tabular-nums">
+                              עמלה {formatUSD(exit.fees)}
+                            </p>
                           )}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+                        </div>
+
+                        {/* Col 4 (leftmost in RTL): Undo — ghost until hover */}
+                        <div className="shrink-0 w-7 flex items-center justify-center">
+                          <button
+                            type="button"
+                            onClick={() => setConfirmIndex(i)}
+                            title="בטל יציאה זו"
+                            className="w-7 h-7 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all"
+                          >
+                            <RotateCcw className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )
+              })}
             </div>
 
-            <Separator />
-            <div className="flex items-center justify-between px-1 pb-1">
-              <span className="text-sm font-semibold text-slate-600">סה&quot;כ רווח ממומש</span>
+            {/* ── Total row ── */}
+            <div className="flex items-center justify-between px-3 py-3 rounded-xl bg-slate-50 border border-slate-100">
+              <span className="text-sm font-semibold text-slate-600">
+                סה&quot;כ רווח ממומש
+              </span>
               <span className={cn(
-                "text-lg font-bold tabular-nums",
-                totalPnL > 0 ? "text-emerald-600" : totalPnL < 0 ? "text-rose-600" : "text-slate-500"
+                "text-base font-bold tabular-nums",
+                totalPnL > 0 ? "text-emerald-600"
+                : totalPnL < 0 ? "text-rose-600"
+                : "text-slate-500"
               )}>
                 {totalPnL >= 0 ? "+" : ""}{formatUSD(totalPnL)}
               </span>
             </div>
+
           </div>
         )}
       </DialogContent>
