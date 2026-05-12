@@ -2,17 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
-import { TrendingUp, TrendingDown } from "lucide-react"
+import { TrendingUp, TrendingDown, X } from "lucide-react"
 import { Trade, TradeInsert } from "@/lib/types"
 import { riskPerTrade, riskRewardRatio, formatUSD } from "@/lib/calculations"
 import { createClient } from "@/lib/supabase/client"
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -47,6 +40,20 @@ export function TradeForm({ open, trade, onClose }: TradeFormProps) {
   const [form, setForm] = useState<TradeInsert>(EMPTY)
   const [loading, setLoading] = useState(false)
   const isEdit = !!trade
+
+  // Lock body scroll + Escape key while open
+  useEffect(() => {
+    if (!open) return
+    document.body.style.overflow = "hidden"
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape" && !loading) onClose()
+    }
+    window.addEventListener("keydown", onKey)
+    return () => {
+      document.body.style.overflow = ""
+      window.removeEventListener("keydown", onKey)
+    }
+  }, [open, loading, onClose])
 
   useEffect(() => {
     if (trade) {
@@ -98,6 +105,7 @@ export function TradeForm({ open, trade, onClose }: TradeFormProps) {
     return riskRewardRatio(form.entry_price, form.target_price, form.stop_loss)
   }, [form.entry_price, form.target_price, form.stop_loss])
 
+  // ── Supabase logic — unchanged ──────────────────────────────────────────
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.symbol.trim()) { toast.error("נא להזין סמל נייר ערך"); return }
@@ -135,176 +143,239 @@ export function TradeForm({ open, trade, onClose }: TradeFormProps) {
     }
     setLoading(false)
   }
+  // ────────────────────────────────────────────────────────────────────────
+
+  if (!open) return null
 
   return (
-    <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
-      <SheetContent side="left" className="w-full sm:max-w-lg overflow-y-auto">
-        <SheetHeader className="mb-6">
-          <SheetTitle>{isEdit ? "עריכת עסקה" : "עסקה חדשה"}</SheetTitle>
-          <SheetDescription>
-            {isEdit ? "עדכן את פרטי העסקה" : "הזן את פרטי עסקת הסווינג החדשה"}
-          </SheetDescription>
-        </SheetHeader>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Blurred backdrop */}
+      <div
+        className="absolute inset-0 bg-black/65 backdrop-blur-md animate-backdrop-in"
+        onClick={() => !loading && onClose()}
+      />
 
-          {/* Long / Short toggle */}
-          <div className="space-y-2">
-            <Label>כיוון עסקה</Label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => set("side", "long")}
-                className={cn(
-                  "flex items-center justify-center gap-2 rounded-lg border py-2.5 text-sm font-semibold transition-all",
-                  form.side === "long"
-                    ? "bg-emerald-50 border-emerald-400 text-emerald-700"
-                    : "border-slate-200 text-slate-400 hover:border-slate-300"
-                )}
-              >
-                <TrendingUp className="h-4 w-4" />
-                לונג (קנייה)
-              </button>
-              <button
-                type="button"
-                onClick={() => set("side", "short")}
-                className={cn(
-                  "flex items-center justify-center gap-2 rounded-lg border py-2.5 text-sm font-semibold transition-all",
-                  form.side === "short"
-                    ? "bg-rose-50 border-rose-400 text-rose-700"
-                    : "border-slate-200 text-slate-400 hover:border-slate-300"
-                )}
-              >
-                <TrendingDown className="h-4 w-4" />
-                שורט (מכירה)
-              </button>
+      {/*
+        .dark wrapper → activates shadcn dark CSS-variable tokens for all
+        child components (Input, Textarea, Label, Separator, etc.)
+        without needing to override each one individually.
+      */}
+      <div className="dark relative w-full max-w-2xl animate-trade-modal">
+        <div
+          className="rounded-2xl bg-slate-900 border border-amber-400/[0.12] overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[88vh]"
+          style={{
+            boxShadow:
+              "0 25px 60px -10px rgba(0,0,0,0.85), " +
+              "0 0 0 1px rgba(245,158,11,0.07), " +
+              "inset 0 1px 0 rgba(255,255,255,0.04)",
+          }}
+        >
+
+          {/* ── Header ── */}
+          <div className="flex items-start justify-between px-6 pt-5 pb-4 border-b border-white/[0.07] shrink-0">
+            <div>
+              <h2 className="text-lg font-bold text-white">
+                {isEdit ? "עריכת עסקה" : "עסקה חדשה"}
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {isEdit ? "עדכן את פרטי העסקה" : "הזן את פרטי עסקת הסווינג החדשה"}
+              </p>
             </div>
+            <button
+              type="button"
+              onClick={() => !loading && onClose()}
+              className="text-slate-500 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/[0.06] -mt-0.5 -ml-0.5"
+            >
+              <X className="h-4.5 w-4.5" />
+            </button>
           </div>
 
-          {/* Symbol */}
-          <div className="space-y-2">
-            <Label>סמל נייר ערך</Label>
-            <StockSearchInput value={form.symbol} onSelect={handleStockSelect} />
-            <p className="text-xs text-slate-400">הקלד לחיפוש · לחץ Enter או &quot;השתמש ישירות&quot; לסמלים כמו METU, ETF וכו&#39;</p>
-          </div>
+          {/* ── Scrollable form body ── */}
+          <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-6 py-5 space-y-5">
 
-          {/* Entry date */}
-          <div className="space-y-2">
-            <Label>תאריך כניסה</Label>
-            <Input
-              type="date"
-              value={form.entry_date}
-              onChange={(e) => set("entry_date", e.target.value)}
-              dir="ltr"
-            />
-          </div>
+            {/* Long / Short */}
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                כיוון עסקה
+              </Label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => set("side", "long")}
+                  className={cn(
+                    "flex items-center justify-center gap-2 rounded-xl border py-3 text-sm font-semibold transition-all",
+                    form.side === "long"
+                      ? "bg-emerald-500/15 border-emerald-400/60 text-emerald-400"
+                      : "border-slate-700 text-slate-500 hover:border-slate-600 hover:text-slate-400"
+                  )}
+                >
+                  <TrendingUp className="h-4 w-4" />
+                  לונג (קנייה)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => set("side", "short")}
+                  className={cn(
+                    "flex items-center justify-center gap-2 rounded-xl border py-3 text-sm font-semibold transition-all",
+                    form.side === "short"
+                      ? "bg-rose-500/15 border-rose-400/60 text-rose-400"
+                      : "border-slate-700 text-slate-500 hover:border-slate-600 hover:text-slate-400"
+                  )}
+                >
+                  <TrendingDown className="h-4 w-4" />
+                  שורט (מכירה)
+                </button>
+              </div>
+            </div>
 
-          {/* Prices */}
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>מחיר כניסה</Label>
-              <Input
-                type="number" step="0.01" min="0" placeholder="0.00" dir="ltr"
-                value={form.entry_price || ""}
-                onChange={(e) => set("entry_price", num(e.target.value))}
-              />
+            {/* Symbol + Date */}
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-4 items-start">
+              <div className="space-y-2">
+                <Label className="text-slate-300">סמל נייר ערך</Label>
+                <StockSearchInput value={form.symbol} onSelect={handleStockSelect} />
+                <p className="text-xs text-slate-500">
+                  הקלד לחיפוש · Enter לסמלים כמו METU, ETF וכו׳
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-slate-300">תאריך כניסה</Label>
+                <Input
+                  type="date"
+                  value={form.entry_date}
+                  onChange={(e) => set("entry_date", e.target.value)}
+                  dir="ltr"
+                  className="sm:w-40"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label className="text-rose-600">סטופ לוס</Label>
-              <Input
-                type="number" step="0.01" min="0" placeholder="0.00" dir="ltr"
-                value={form.stop_loss || ""}
-                onChange={(e) => set("stop_loss", num(e.target.value))}
-                className="border-rose-200 focus-visible:ring-rose-400"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-emerald-600">יעד (אופציונלי)</Label>
-              <Input
-                type="number" step="0.01" min="0" placeholder="0.00" dir="ltr"
-                value={form.target_price ?? ""}
-                onChange={(e) => set("target_price", e.target.value ? num(e.target.value) : null)}
-                className="border-emerald-200 focus-visible:ring-emerald-400"
-              />
-            </div>
-          </div>
 
-          {/* Quantity + Fees */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>כמות</Label>
-              <Input
-                type="number" step="1" min="0" placeholder="100" dir="ltr"
-                value={form.quantity || ""}
-                onChange={(e) => set("quantity", num(e.target.value))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>עמלות</Label>
-              <Input
-                type="number" step="0.01" min="0" placeholder="0.00" dir="ltr"
-                value={form.fees || ""}
-                onChange={(e) => set("fees", num(e.target.value))}
-              />
-            </div>
-          </div>
-
-          {/* Live calculations */}
-          {(risk > 0 || rrr !== null) && (
-            <div className="rounded-lg bg-slate-50 p-4 space-y-2">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">חישוב בזמן אמת</p>
-              {risk > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">סיכון (R)</span>
-                  <span className="font-semibold text-amber-600">{formatUSD(risk)}</span>
+            {/* Entry | Stop Loss | Target */}
+            <div className="space-y-1.5">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">מחירים</p>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="space-y-2">
+                  <Label className="text-xs text-slate-300">מחיר כניסה</Label>
+                  <Input
+                    type="number" step="0.01" min="0" placeholder="0.00" dir="ltr"
+                    value={form.entry_price || ""}
+                    onChange={(e) => set("entry_price", num(e.target.value))}
+                  />
                 </div>
-              )}
-              {rrr !== null && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">יחס סיכון/תגמול</span>
-                  <span className={`font-semibold ${rrr >= 2 ? "text-emerald-600" : "text-amber-600"}`}>
-                    {rrr.toFixed(2)}{rrr < 2 && " ⚠ מתחת ל-2:1"}
-                  </span>
+                <div className="space-y-2">
+                  <Label className="text-xs text-rose-400">סטופ לוס</Label>
+                  <Input
+                    type="number" step="0.01" min="0" placeholder="0.00" dir="ltr"
+                    value={form.stop_loss || ""}
+                    onChange={(e) => set("stop_loss", num(e.target.value))}
+                    className="border-rose-900/50 focus-visible:border-rose-500/50"
+                  />
                 </div>
-              )}
+                <div className="space-y-2">
+                  <Label className="text-xs text-emerald-400">יעד (אופציונלי)</Label>
+                  <Input
+                    type="number" step="0.01" min="0" placeholder="0.00" dir="ltr"
+                    value={form.target_price ?? ""}
+                    onChange={(e) => set("target_price", e.target.value ? num(e.target.value) : null)}
+                    className="border-emerald-900/50 focus-visible:border-emerald-500/50"
+                  />
+                </div>
+              </div>
             </div>
-          )}
 
-          <Separator />
+            {/* Quantity + Fees */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-slate-300">כמות</Label>
+                <Input
+                  type="number" step="1" min="0" placeholder="100" dir="ltr"
+                  value={form.quantity || ""}
+                  onChange={(e) => set("quantity", num(e.target.value))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-slate-300">עמלות</Label>
+                <Input
+                  type="number" step="0.01" min="0" placeholder="0.00" dir="ltr"
+                  value={form.fees || ""}
+                  onChange={(e) => set("fees", num(e.target.value))}
+                />
+              </div>
+            </div>
 
-          {/* Exit price */}
-          <div className="space-y-2">
-            <Label>מחיר יציאה (לסגירת עסקה)</Label>
-            <Input
-              type="number" step="0.01" min="0"
-              placeholder="השאר ריק לעסקה פעילה" dir="ltr"
-              value={form.exit_price ?? ""}
-              onChange={(e) => set("exit_price", e.target.value ? num(e.target.value) : null)}
-            />
-            <p className="text-xs text-slate-400">הזנת מחיר יציאה תסמן את העסקה כ"סגורה" אוטומטית</p>
-          </div>
+            {/* Live calculations */}
+            {(risk > 0 || rrr !== null) && (
+              <div className="rounded-xl bg-slate-800/70 border border-slate-700/60 px-4 py-3.5 space-y-2.5">
+                <p className="text-xs font-bold uppercase tracking-wide text-amber-400/80">
+                  חישוב בזמן אמת
+                </p>
+                {risk > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">סיכון (R)</span>
+                    <span className="font-semibold text-amber-400">{formatUSD(risk)}</span>
+                  </div>
+                )}
+                {rrr !== null && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">יחס סיכון/תגמול</span>
+                    <span className={`font-semibold ${rrr >= 2 ? "text-emerald-400" : "text-amber-400"}`}>
+                      {rrr.toFixed(2)}{rrr < 2 && " ⚠ מתחת ל-2:1"}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
 
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label>הערות (אופציונלי)</Label>
-            <Textarea
-              placeholder="ניתוח, סיבה לכניסה, לקחים..."
-              value={form.notes ?? ""}
-              onChange={(e) => set("notes", e.target.value || null)}
-              rows={3}
-            />
-          </div>
+            <Separator className="bg-white/[0.07]" />
 
-          <div className="flex gap-3 pt-2">
-            <Button type="submit" className="flex-1" disabled={loading}>
-              {loading ? "שומר..." : isEdit ? "שמור שינויים" : "הוסף עסקה"}
-            </Button>
-            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
-              ביטול
-            </Button>
-          </div>
-        </form>
-      </SheetContent>
-    </Sheet>
+            {/* Exit price */}
+            <div className="space-y-2">
+              <Label className="text-slate-300">מחיר יציאה (לסגירת עסקה)</Label>
+              <Input
+                type="number" step="0.01" min="0"
+                placeholder="השאר ריק לעסקה פעילה" dir="ltr"
+                value={form.exit_price ?? ""}
+                onChange={(e) => set("exit_price", e.target.value ? num(e.target.value) : null)}
+              />
+              <p className="text-xs text-slate-500">
+                הזנת מחיר יציאה תסמן את העסקה כ&quot;סגורה&quot; אוטומטית
+              </p>
+            </div>
+
+            {/* Notes */}
+            <div className="space-y-2">
+              <Label className="text-slate-300">הערות (אופציונלי)</Label>
+              <Textarea
+                placeholder="ניתוח, סיבה לכניסה, לקחים..."
+                value={form.notes ?? ""}
+                onChange={(e) => set("notes", e.target.value || null)}
+                rows={3}
+              />
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-3 pt-1 pb-2">
+              <Button
+                type="submit"
+                disabled={loading}
+                className="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold border-0 shadow-lg shadow-amber-500/20"
+              >
+                {loading ? "שומר..." : isEdit ? "שמור שינויים" : "הוסף עסקה"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={loading}
+                className="border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white hover:border-slate-600"
+              >
+                ביטול
+              </Button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+    </div>
   )
 }

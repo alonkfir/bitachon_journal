@@ -129,6 +129,18 @@
   }
 }
 
+/* Trade modal — scale + fade open animation */
+@keyframes trade-modal-in {
+  from { opacity: 0; transform: scale(0.96) translateY(-8px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-trade-modal  { animation: trade-modal-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-backdrop-in  { animation: backdrop-in    0.18s ease-out both; }
+
 /* Accordion panel height animation */
 .accordion-panel {
   display: grid;
