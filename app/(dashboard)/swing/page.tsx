@@ -57,8 +57,8 @@ export default function SwingPage() {
     <div className="space-y-6 w-full pb-24 md:pb-0">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-xl md:text-2xl font-bold text-slate-900 truncate">יומן סווינג</h1>
-          <p className="text-slate-500 text-xs md:text-sm mt-0.5">עקוב ונתח את עסקאות הסווינג שלך</p>
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white truncate">יומן סווינג</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm mt-0.5">עקוב ונתח את עסקאות הסווינג שלך</p>
         </div>
         <Button
           onClick={(e) => {

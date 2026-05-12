@@ -32,37 +32,38 @@ export function ThemeToggle() {
         "hover:bg-black/5 dark:hover:bg-white/5"
       )}
     >
-      {/* Track */}
+      {/* Track — dir=ltr keeps internal coordinate system LTR so framer x animation is correct in RTL sidebar */}
       <div
+        dir="ltr"
         className={cn(
-          "relative h-7 w-14 rounded-full shrink-0 transition-colors duration-300 border",
+          "relative h-8 w-[60px] rounded-full shrink-0 transition-colors duration-300 border",
           isDark
             ? "bg-slate-800 border-slate-700/60"
             : "bg-slate-200/80 border-slate-300/60"
         )}
       >
-        {/* Background icons — always visible */}
-        <div className="absolute inset-0 flex items-center justify-between px-[5px] pointer-events-none">
+        {/* Background icons */}
+        <div className="absolute inset-0 flex items-center justify-between px-[6px] pointer-events-none">
           <Moon className={cn(
-            "h-3.5 w-3.5 transition-opacity",
+            "h-4 w-4 transition-opacity",
             isDark ? "opacity-80 text-slate-300" : "opacity-30 text-slate-500"
           )} />
           <Sun className={cn(
-            "h-3.5 w-3.5 transition-opacity",
+            "h-4 w-4 transition-opacity",
             !isDark ? "opacity-90 text-amber-600" : "opacity-25 text-slate-500"
           )} />
         </div>
 
-        {/* Sliding thumb with brand yellow */}
+        {/* Sliding thumb — x:2 = left/dark, x:30 = right/light (for 60px track, 28px thumb) */}
         <motion.div
-          className="absolute top-[2px] h-6 w-6 rounded-full shadow-sm flex items-center justify-center"
+          className="absolute top-[2px] h-7 w-7 rounded-full shadow-sm flex items-center justify-center"
           style={{ backgroundColor: "#ffe26f" }}
           animate={{ x: isDark ? 2 : 30 }}
           transition={{ type: "spring", stiffness: 500, damping: 35 }}
         >
           {isDark
-            ? <Moon className="h-3 w-3 text-slate-800" />
-            : <Sun className="h-3 w-3 text-slate-800" />
+            ? <Moon className="h-3.5 w-3.5 text-slate-800" />
+            : <Sun className="h-3.5 w-3.5 text-slate-800" />
           }
         </motion.div>
       </div>

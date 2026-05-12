@@ -63,8 +63,8 @@ export default function PortfolioPage() {
       {/* Page header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">תיק השקעות</h1>
-          <p className="text-slate-500 text-sm mt-0.5">פיזור ארוך-טווח לפי ניירות ערך</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">תיק השקעות</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">פיזור ארוך-טווח לפי ניירות ערך</p>
         </div>
         <Button onClick={() => setFormOpen(true)}>
           <Plus className="h-4 w-4 ml-1" />
@@ -79,26 +79,26 @@ export default function PortfolioPage() {
         <div className="space-y-5">
 
           {/* Total Portfolio Value */}
-          <Card className="border-0 shadow-sm bg-white">
+          <Card className="border-0 shadow-sm bg-white dark:bg-slate-900 dark:border dark:border-slate-700/50">
             <CardContent className="px-6 py-4">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1">
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">
                 שווי תיק כולל
               </p>
               {loading ? (
                 <Skeleton className="h-10 w-48 mt-1" />
               ) : (
-                <p className="text-4xl font-bold text-slate-900 tabular-nums leading-none">
+                <p className="text-4xl font-bold text-slate-900 dark:text-white tabular-nums leading-none">
                   {formatUSD(totalValue)}
                 </p>
               )}
-              <p className="text-xs text-slate-400 mt-1.5">{holdings.length} ניירות ערך</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1.5">{holdings.length} ניירות ערך</p>
             </CardContent>
           </Card>
 
           {/* Pie Chart */}
-          <Card className="border-0 shadow-sm bg-white">
+          <Card className="border-0 shadow-sm bg-white dark:bg-slate-900 dark:border dark:border-slate-700/50">
             <CardHeader className="pb-1 pt-4 px-5">
-              <CardTitle className="text-sm font-semibold text-slate-700">פיזור לפי ניירות ערך</CardTitle>
+              <CardTitle className="text-sm font-semibold text-slate-700 dark:text-slate-300">פיזור לפי ניירות ערך</CardTitle>
             </CardHeader>
             <CardContent className="px-5 pb-5">
               {loading ? (
@@ -109,15 +109,15 @@ export default function PortfolioPage() {
                 <>
                   <AllocationChart allocations={allocations} />
                   {/* Compact legend */}
-                  <div className="mt-3 pt-3 border-t grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-1.5">
+                  <div className="mt-3 pt-3 border-t dark:border-slate-700/50 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-1.5">
                     {allocations.map((a, i) => (
                       <div key={a.ticker} className="flex items-center gap-1.5 min-w-0">
                         <div
                           className="h-2 w-2 rounded-full shrink-0"
                           style={{ background: CHART_COLORS[i % CHART_COLORS.length] }}
                         />
-                        <span className="text-xs font-medium text-slate-600 truncate">{a.ticker}</span>
-                        <span className="text-xs text-slate-400 tabular-nums mr-auto shrink-0">
+                        <span className="text-xs font-medium text-slate-600 dark:text-slate-300 truncate">{a.ticker}</span>
+                        <span className="text-xs text-slate-400 dark:text-slate-500 tabular-nums mr-auto shrink-0">
                           {a.percentage.toFixed(1)}%
                         </span>
                       </div>
@@ -125,7 +125,7 @@ export default function PortfolioPage() {
                   </div>
                 </>
               ) : (
-                <div className="flex items-center justify-center h-64 text-slate-400 text-sm">
+                <div className="flex items-center justify-center h-64 text-slate-400 dark:text-slate-600 text-sm">
                   אין נתונים להצגה
                 </div>
               )}

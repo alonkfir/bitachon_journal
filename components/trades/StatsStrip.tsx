@@ -6,6 +6,7 @@ import {
   ResponsiveContainer, ReferenceLine,
 } from "recharts"
 import { Pencil, Check } from "lucide-react"
+import { useTheme } from "next-themes"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Trade } from "@/lib/types"
 import { computeMetrics, formatUSD, formatPercent } from "@/lib/calculations"
@@ -79,11 +80,11 @@ function ChartTooltip({ active, payload }: { active?: boolean; payload?: { paylo
   if (!active || !payload?.length) return null
   const { date, balance, pnl } = payload[0].payload
   return (
-    <div className="rounded-lg border bg-white shadow-md px-2.5 py-1.5 text-[11px]">
-      <p className="text-slate-400">{new Date(date).toLocaleDateString("he-IL")}</p>
-      <p className="font-semibold text-slate-800">{formatUSD(balance)}</p>
+    <div className="rounded-lg border dark:border-slate-700 bg-white dark:bg-slate-800 shadow-md px-2.5 py-1.5 text-[11px]">
+      <p className="text-slate-400 dark:text-slate-500">{new Date(date).toLocaleDateString("he-IL")}</p>
+      <p className="font-semibold text-slate-800 dark:text-slate-100">{formatUSD(balance)}</p>
       {pnl !== 0 && (
-        <p className={pnl >= 0 ? "text-emerald-600" : "text-rose-600"}>
+        <p className={pnl >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}>
           {pnl >= 0 ? "+" : ""}{formatUSD(pnl)}
         </p>
       )}
@@ -99,6 +100,8 @@ export function StatsStrip({ trades, loading, initialBalance, onUpdateBalance }:
   const [draft, setDraft]     = useState("")
   const [saving, setSaving]   = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const { resolvedTheme } = useTheme()
+  const isDarkChart = resolvedTheme === "dark"
 
   const m = useMemo(() => computeMetrics(trades), [trades])
 
@@ -134,15 +137,15 @@ export function StatsStrip({ trades, loading, initialBalance, onUpdateBalance }:
 
   if (loading) {
     return (
-      <div className="rounded-xl border bg-white shadow-sm overflow-hidden flex flex-wrap md:flex-nowrap md:h-[196px]">
+      <div className="rounded-xl border dark:border-slate-700/50 bg-white dark:bg-slate-900 shadow-sm overflow-hidden flex flex-wrap md:flex-nowrap md:h-[196px]">
         {/* P&L skeleton */}
-        <div className="w-1/2 md:w-[190px] shrink-0 border-b md:border-b-0 border-r p-4 md:p-6 flex flex-col justify-center gap-2 md:gap-3 order-1">
+        <div className="w-1/2 md:w-[190px] shrink-0 border-b md:border-b-0 border-r dark:border-slate-700/50 p-4 md:p-6 flex flex-col justify-center gap-2 md:gap-3 order-1">
           <Skeleton className="h-3 w-16" />
           <Skeleton className="h-7 md:h-9 w-20 md:w-28" />
           <Skeleton className="h-3 w-14 md:w-20" />
         </div>
         {/* Win Rate skeleton */}
-        <div className="w-1/2 md:w-[190px] shrink-0 border-b md:border-b-0 md:border-l p-4 md:p-6 flex flex-col items-end justify-center gap-2 md:gap-3 order-2 md:order-3">
+        <div className="w-1/2 md:w-[190px] shrink-0 border-b md:border-b-0 md:border-l dark:border-slate-700/50 p-4 md:p-6 flex flex-col items-end justify-center gap-2 md:gap-3 order-2 md:order-3">
           <Skeleton className="h-3 w-16" />
           <Skeleton className="h-7 md:h-9 w-20 md:w-28" />
           <Skeleton className="h-3 w-14 md:w-20" />
@@ -163,28 +166,28 @@ export function StatsStrip({ trades, loading, initialBalance, onUpdateBalance }:
 
   return (
     <div
-      className="rounded-xl border bg-white shadow-sm overflow-hidden flex flex-wrap md:flex-nowrap md:h-[196px]"
+      className="rounded-xl border dark:border-slate-700/50 bg-white dark:bg-slate-900 shadow-sm overflow-hidden flex flex-wrap md:flex-nowrap md:h-[196px]"
       dir="ltr"
     >
 
       {/* ── P&L card — order 1 on both layouts ── */}
       <div className={cn(
         "w-1/2 md:w-[190px] shrink-0",
-        "border-b md:border-b-0 border-r",
+        "border-b md:border-b-0 border-r dark:border-slate-700/50",
         "flex flex-col justify-center px-4 md:px-6 py-3 md:py-5 gap-1 md:gap-2",
         "order-1",
       )}>
-        <p className="text-[10px] md:text-xs font-semibold text-slate-400 uppercase tracking-wider leading-none">
+        <p className="text-[10px] md:text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none">
           P &amp; L
         </p>
         <p className={cn(
           "text-xl md:text-3xl font-bold tabular-nums leading-tight",
-          totalPnL > 0 ? "text-emerald-600" : totalPnL < 0 ? "text-rose-600" : "text-slate-700"
+          totalPnL > 0 ? "text-emerald-600 dark:text-emerald-400" : totalPnL < 0 ? "text-rose-600 dark:text-rose-400" : "text-slate-700 dark:text-slate-300"
         )}>
           {totalPnL >= 0 ? "+" : ""}{formatUSD(totalPnL)}
         </p>
         {initialBalance > 0 && (
-          <p className="text-[10px] md:text-xs text-slate-400 leading-none tabular-nums">
+          <p className="text-[10px] md:text-xs text-slate-400 dark:text-slate-500 leading-none tabular-nums">
             {formatUSD(finalBalance)}
           </p>
         )}
@@ -193,22 +196,22 @@ export function StatsStrip({ trades, loading, initialBalance, onUpdateBalance }:
       {/* ── Win Rate card — order 2 on mobile (next to P&L), order 3 on desktop (after chart) ── */}
       <div className={cn(
         "w-1/2 md:w-[190px] shrink-0",
-        "border-b md:border-b-0 md:border-l",
+        "border-b md:border-b-0 md:border-l dark:border-slate-700/50",
         "flex flex-col justify-center px-4 md:px-6 py-3 md:py-5 gap-1 md:gap-2",
         "order-2 md:order-3",
       )}>
-        <p className="text-[10px] md:text-xs font-semibold text-slate-400 uppercase tracking-wider leading-none text-right">
+        <p className="text-[10px] md:text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider leading-none text-right">
           WIN RATE
         </p>
         <p className={cn(
           "text-xl md:text-3xl font-bold tabular-nums leading-tight text-right",
-          m.winRate !== null && m.winRate >= 50 ? "text-emerald-600"
-            : m.winRate !== null ? "text-rose-600"
-            : "text-slate-700"
+          m.winRate !== null && m.winRate >= 50 ? "text-emerald-600 dark:text-emerald-400"
+            : m.winRate !== null ? "text-rose-600 dark:text-rose-400"
+            : "text-slate-700 dark:text-slate-300"
         )}>
           {m.winRate !== null ? formatPercent(m.winRate) : "—"}
         </p>
-        <p className="text-[10px] md:text-xs text-slate-400 leading-none text-right">
+        <p className="text-[10px] md:text-xs text-slate-400 dark:text-slate-500 leading-none text-right">
           {m.closedTradeCount > 0 ? `${m.closedTradeCount} עסקאות` : "אין עדיין"}
         </p>
       </div>
@@ -230,8 +233,8 @@ export function StatsStrip({ trades, loading, initialBalance, onUpdateBalance }:
                 className={cn(
                   "px-2 py-1 rounded text-xs font-semibold transition-all",
                   range === r
-                    ? "bg-slate-800 text-white"
-                    : "text-slate-400 hover:text-slate-600"
+                    ? "bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900"
+                    : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
                 )}
               >
                 {r}
@@ -241,8 +244,8 @@ export function StatsStrip({ trades, loading, initialBalance, onUpdateBalance }:
 
           <div className="pointer-events-auto">
             {editBal ? (
-              <div className="flex items-center gap-1 bg-white/95 rounded px-1.5 py-0.5 border shadow-sm">
-                <span className="text-[10px] text-slate-400">$</span>
+              <div className="flex items-center gap-1 bg-white/95 dark:bg-slate-800/95 rounded px-1.5 py-0.5 border dark:border-slate-700 shadow-sm">
+                <span className="text-[10px] text-slate-400 dark:text-slate-500">$</span>
                 <input
                   ref={inputRef}
                   type="number"
@@ -251,7 +254,7 @@ export function StatsStrip({ trades, loading, initialBalance, onUpdateBalance }:
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") saveBalance(); if (e.key === "Escape") setEditBal(false) }}
-                  className="w-20 text-[11px] font-semibold text-slate-800 outline-none bg-transparent tabular-nums"
+                  className="w-20 text-[11px] font-semibold text-slate-800 dark:text-slate-100 outline-none bg-transparent tabular-nums"
                   placeholder="100000"
                   dir="ltr"
                 />
@@ -262,11 +265,11 @@ export function StatsStrip({ trades, loading, initialBalance, onUpdateBalance }:
             ) : (
               <button
                 onClick={startEditBalance}
-                className="flex items-center gap-1 text-slate-300 hover:text-slate-500 transition-colors"
+                className="flex items-center gap-1 text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 transition-colors"
                 title="Set initial balance"
               >
                 {initialBalance > 0 && (
-                  <span className="text-[10px] text-slate-400 tabular-nums">${(initialBalance / 1000).toFixed(0)}k</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 tabular-nums">${(initialBalance / 1000).toFixed(0)}k</span>
                 )}
                 <Pencil className="h-3 w-3" />
               </button>
@@ -285,7 +288,7 @@ export function StatsStrip({ trades, loading, initialBalance, onUpdateBalance }:
                 </linearGradient>
               </defs>
               {initialBalance > 0 && (
-                <ReferenceLine y={initialBalance} stroke="#e2e8f0" strokeDasharray="3 3" strokeWidth={1} />
+                <ReferenceLine y={initialBalance} stroke={isDarkChart ? "#334155" : "#e2e8f0"} strokeDasharray="3 3" strokeWidth={1} />
               )}
               <XAxis dataKey="date" hide />
               <Tooltip content={<ChartTooltip />} />
@@ -302,7 +305,7 @@ export function StatsStrip({ trades, loading, initialBalance, onUpdateBalance }:
           </ResponsiveContainer>
         ) : (
           <div className="h-full flex items-center justify-center">
-            <p className="text-[11px] text-slate-300">
+            <p className="text-[11px] text-slate-300 dark:text-slate-600">
               {initialBalance === 0 ? "הגדר יתרה התחלתית ←" : "אין עסקאות סגורות עדיין"}
             </p>
           </div>
