@@ -8,7 +8,6 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -37,35 +36,6 @@ export function AppSidebar() {
 
   return (
     <Sidebar side="right" collapsible="icon">
-
-      {/* ── Brand header ── */}
-      <SidebarHeader className="px-3 py-4">
-        <div className="flex items-center gap-3 min-w-0 px-1">
-          {/* Logo mark with brand yellow */}
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm"
-            style={{ backgroundColor: "#ffe26f" }}
-          >
-            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none">
-              <path
-                d="M12 2L4 6v6c0 5.25 3.5 10.15 8 11.35C16.5 22.15 20 17.25 20 12V6L12 2z"
-                fill="currentColor"
-                className="text-slate-900"
-              />
-            </svg>
-          </div>
-          <div className="min-w-0 group-data-[collapsible=icon]:hidden">
-            <p className="font-bold text-[15px] leading-tight truncate text-[#9a6f00] dark:text-[#ffe26f]">
-              ביטחון בשוק ההון
-            </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-tight mt-0.5">
-              סווינג מומנטום
-            </p>
-          </div>
-        </div>
-      </SidebarHeader>
-
-      <SidebarSeparator />
 
       {/* ── Navigation ── */}
       <SidebarContent className="px-2 py-3">

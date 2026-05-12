@@ -18,10 +18,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <SidebarTrigger className="-mr-1" />
           <Separator orientation="vertical" className="h-5" />
           <div className="flex-1 min-w-0 pr-1">
-            <p className="text-[15px] font-bold text-slate-900 dark:text-[#ffe26f] leading-tight truncate">
+            <p className="text-[15px] font-bold text-slate-900 dark:text-white leading-tight truncate">
               ביטחון בשוק ההון
             </p>
-            <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 leading-tight tracking-wide">
+            <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 leading-tight tracking-wide">
               סווינג מומנטום
             </p>
           </div>
