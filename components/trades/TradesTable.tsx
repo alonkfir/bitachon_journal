@@ -108,7 +108,7 @@ interface MobileCardProps {
   livePrices: Record<string, number>
   onEdit: (t: Trade) => void
   onHistory: (t: Trade) => void
-  onQuickSell: (t: Trade) => void
+  onQuickSell: (t: Trade, rect: DOMRect) => void
   onDelete: (id: string) => void
 }
 
@@ -219,9 +219,10 @@ function MobileTradeCard({ trade, livePrices, onEdit, onHistory, onQuickSell, on
       <div className="flex gap-2">
         {isActive && (
           <Button
-            variant="outline" size="sm"
-            className="flex-1 h-10 text-sm border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 gap-1.5"
-            onClick={() => onQuickSell(trade)}
+            size="sm"
+            className="flex-1 h-10 text-sm gap-1.5 border-0 font-semibold shadow-sm"
+            style={{ backgroundColor: "#ffe26f", color: "#1e293b" }}
+            onClick={(e) => onQuickSell(trade, (e.currentTarget as HTMLElement).getBoundingClientRect())}
           >
             <TrendingDown className="h-4 w-4" />
             מימוש
@@ -278,6 +279,7 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
   const [deleteId, setDeleteId]             = useState<string | null>(null)
   const [deleting, setDeleting]             = useState(false)
   const [quickSellTrade, setQuickSellTrade] = useState<Trade | null>(null)
+  const [quickSellRect, setQuickSellRect]   = useState<DOMRect | null>(null)
   const [historyTrade, setHistoryTrade]     = useState<Trade | null>(null)
 
   const livePrices = useLivePrices(trades)
@@ -502,9 +504,13 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                               <TableCell className="px-2">
                                 {isActive && (
                                   <Button
-                                    variant="outline" size="sm"
-                                    className="h-7 px-2.5 text-xs border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 gap-1 whitespace-nowrap"
-                                    onClick={() => setQuickSellTrade(trade)}
+                                    size="sm"
+                                    className="h-7 px-2.5 text-xs gap-1 whitespace-nowrap border-0 font-semibold shadow-sm"
+                                    style={{ backgroundColor: "#ffe26f", color: "#1e293b" }}
+                                    onClick={(e) => {
+                                      setQuickSellRect((e.currentTarget as HTMLElement).getBoundingClientRect())
+                                      setQuickSellTrade(trade)
+                                    }}
                                   >
                                     <TrendingDown className="h-3 w-3" />
                                     מימוש
@@ -598,7 +604,7 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
                         livePrices={livePrices}
                         onEdit={onEdit}
                         onHistory={(t) => setHistoryTrade(t)}
-                        onQuickSell={(t) => setQuickSellTrade(t)}
+                        onQuickSell={(t, rect) => { setQuickSellRect(rect); setQuickSellTrade(t) }}
                         onDelete={(id) => setDeleteId(id)}
                       />
                     ))}
@@ -612,7 +618,7 @@ export function TradesTable({ trades, loading, onEdit, onRefresh }: TradesTableP
       </div>
 
       <ExitHistoryDialog trade={historyTrade} onClose={() => setHistoryTrade(null)} onRefresh={onRefresh} />
-      <QuickSellDialog trade={quickSellTrade} onClose={() => setQuickSellTrade(null)} onRefresh={onRefresh} />
+      <QuickSellDialog trade={quickSellTrade} originRect={quickSellRect} onClose={() => { setQuickSellTrade(null); setQuickSellRect(null) }} onRefresh={onRefresh} />
       <ConfirmDialog
         open={!!deleteId}
         title="מחיקת עסקה"
