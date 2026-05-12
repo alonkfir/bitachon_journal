@@ -25,7 +25,13 @@ export default function RegisterPage() {
     }
     setLoading(true)
     const supabase = createClient()
-    const { error, data } = await supabase.auth.signUp({ email, password })
+    const { error, data } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+      },
+    })
 
     const isAlreadyRegistered =
       error?.message?.toLowerCase().includes("already registered") ||
@@ -37,6 +43,9 @@ export default function RegisterPage() {
       const { error: resendError } = await supabase.auth.resend({
         type: "signup",
         email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
       })
       if (resendError) {
         toast.error("שגיאה בשליחת הלינק: " + resendError.message)
