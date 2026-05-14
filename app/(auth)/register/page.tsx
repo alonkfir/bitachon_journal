@@ -25,43 +25,26 @@ export default function RegisterPage() {
     }
     setLoading(true)
     const supabase = createClient()
-    const { error, data } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    })
+    const { error, data } = await supabase.auth.signUp({ email, password })
 
-    const isAlreadyRegistered =
-      error?.message?.toLowerCase().includes("already registered") ||
-      error?.message?.toLowerCase().includes("user already exists") ||
-      (!error && data.user?.identities?.length === 0)
-
-    if (isAlreadyRegistered) {
-      // User exists but hasn't confirmed — resend the activation link
-      const { error: resendError } = await supabase.auth.resend({
-        type: "signup",
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
-      })
-      if (resendError) {
-        toast.error("שגיאה בשליחת הלינק: " + resendError.message)
+    if (error) {
+      // "User already registered" — let them log in instead
+      if (
+        error.message.toLowerCase().includes("already registered") ||
+        error.message.toLowerCase().includes("user already exists")
+      ) {
+        toast.error("האימייל הזה כבר רשום. נסה להתחבר.")
       } else {
-        toast.info(
-          "החשבון קיים אך טרם אומת. לינק הפעלה חדש נשלח לאימייל שלך.",
-          { duration: 6000 }
-        )
+        toast.error("שגיאה בהרשמה: " + error.message)
       }
-    } else if (error) {
-      toast.error("שגיאה בהרשמה: " + error.message)
     } else if (data.session) {
+      // Email confirmation is OFF — session is immediate
+      toast.success("ברוך הבא! החשבון נוצר בהצלחה.")
       router.push("/swing")
       router.refresh()
     } else {
-      toast.success("נרשמת בהצלחה! בדוק את האימייל שלך לאישור החשבון.")
+      // Fallback: confirmation is ON (shouldn't reach here normally)
+      toast.info("נשלח אימייל אישור. בדוק את תיבת הדואר שלך.", { duration: 6000 })
     }
     setLoading(false)
   }
