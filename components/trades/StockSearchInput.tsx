@@ -53,6 +53,7 @@ export function StockSearchInput({ value, onSelect }: StockSearchInputProps) {
       setLoading(true)
       try {
         const res = await fetch(`/api/stock/search?q=${encodeURIComponent(val)}`)
+        if (!res.ok) { setResults([]); return }
         const data = await res.json()
 
         // Accept Common Stock AND ETP (Finnhub's type for all ETFs including leveraged)
@@ -73,7 +74,7 @@ export function StockSearchInput({ value, onSelect }: StockSearchInputProps) {
         setLoading(false)
         setSearched(true)
       }
-    }, 350)
+    }, 500)
   }
 
   // Select a ticker found by the API: fetch logo + live price
